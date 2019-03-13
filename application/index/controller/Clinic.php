@@ -16,6 +16,7 @@ use app\index\service\ClinicBankCard;
 use app\index\service\ClinicRelated;
 use app\index\service\TeacherRelevantRecord;
 use app\index\model\Blacklist;
+use app\index\service\InnerMail;
 use mailer\tp5\Mailer;
 
 class Clinic extends Base
@@ -48,7 +49,7 @@ class Clinic extends Base
 		$clinics = $clinic->alias('c')
 		->where($clinicWhere)
 		->field([
-			'c.id','c.clinic_name','c.nature','c.status',$teacherCon.' as teacher_con','c.logo'
+			'c.id as clinic_id','c.clinic_name','c.nature','c.status',$teacherCon.' as teacher_con','c.logo','c.run_status'
 		])
 		->order('create_at','desc')
 		->paginate(20);
@@ -78,7 +79,10 @@ class Clinic extends Base
 				'c.clinic_name','c.nature','c.operator_tel','c.level','c.logo','c.business_license',
 				'c.found_time','c.operator_tel','c.liable_tel','c.liable_name','c.operator_name',
 				'c.operator_identity','c.liable_identity','c.city','c.scene_photo','c.run_status','c.address',
-				'c.latitude','c.longitude','c.suspend_reason','c.create_at','c.update_at'
+				'c.latitude','c.longitude','c.suspend_reason','c.create_at','c.update_at',
+				'c.introduce','null as operator_identity_A','null as operator_identity_B',
+				'null as liable_identity_A','null as liable_identity_B','null as scene_photo1',
+				'null as scene_photo2','null as scene_photo3'
 			])
 			->find();
 			$clinicData['related'] = $related->where(['clinic_id'=>$clinicId])->select();
@@ -90,7 +94,11 @@ class Clinic extends Base
 			// 该机构的倾听订单总时长
 			$listenAllTime = Db::name('order')->where(['clinicid'=>$clinicId,'type'=>1])->field('sum(alltime)')->buildSql();
 			// 该机构的咨询订单总时长
-			$consultAllTime = Db::name('order')->where(['clinicid'=>$clinicId,'type'=>2])->field('sum(alltime)')->buildSql();
+			$consultAllTime = Db::name('order')->alias('o')
+			->join('sy_ordermore om','o.orderid=om.orderid')
+			->where(['o.clinicid'=>$clinicId,'o.type'=>2])
+			->field('sum(om.timelong)')
+			->buildSql();
 			// 该机构收入总额
 			$clinicAccount = Db::name('order')->where(['clinicid'=>$clinicId,'status'=>['between','1,2']])->field('sum(ordermoney)')->buildSql();
 			// 待付款订单
@@ -121,6 +129,7 @@ class Clinic extends Base
 				' as recharge_con',$chargingCon.' as charging_con',$consultTeachers.' as consult_teachers',
 				$listenTeachers.' as listen_teachers',$kxTeachers.' as kx_teachers',$outlineTeachers.' as outline_teachers',
 				'c.logo','c.create_at','c.tel','c.found_time','null as listen_label','null as consult_label'
+				,'c.id as clinic_id'
 			])
 			->find();
 		}
@@ -197,21 +206,109 @@ class Clinic extends Base
 		$request = Request::instance();
 		$clinicId = input('param.clinic_id');
 		$clinic = new ClinicModel;
+		$relevant = new TeacherRelevantRecord;
+		// 全部订单
 		$consoltSql = Db::name('ordermore')->alias('om')->where('om.orderid=o.orderid')->field('count(*)')->buildSql();
-		$clinicData = $clinic->alias('c')
-		->join('sy_order o','o.clinicid=c.id','LEFT')
-		->join('sy_ordermore om','om.orderid=o.orderid','LEFT')
-		->join('sy_listenrecord ol','ol.orderid=o.orderid','LEFT')
-		->join('sy_userfield uf','o.serverpersonid=uf.uid')
-		->where(['c.id'=>$clinicId])
-		->field(['ol.stime','ol.etime','o.content','o.orderid','om.starttime','om.endtime','o.alltime','o.sytime','om.number','o.type',$consoltSql.' as consult_con','uf.realname'])
-		->order('o.createtime','desc')
-		->paginate(15);
-		if($clinicData){
-			return json(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$clinicData]);
-		}else{
-			return json(['success'=>false,'code'=>'013','message'=>'查询出错，请稍后重试']);
+		$listenOrderData = $clinic->alias('c')
+				->join('sy_order o','o.clinicid=c.id','LEFT')
+				->join('sy_listenrecord ol','ol.orderid=o.orderid','LEFT')
+				->join('sy_userfield uf','o.serverpersonid=uf.uid','LEFT')
+				->join('sy_user u','u.id=o.serverpersonid','LEFT')
+				->join('sy_user uu','uu.id=o.uid','LEFT')
+				->where(['c.id'=>$clinicId,'o.type'=>1])
+				->field([
+					'ol.stime','ol.etime','o.content',
+					'o.orderid','o.alltime','o.sytime',
+					'o.type','uf.realname','u.avatarurl',
+					'uu.gender','uu.nickname','o.topic'
+				])
+				->order('o.createtime','desc')
+				->limit(10)
+				->select();
+		$consultOrderData = $clinic->alias('c')
+				->join('sy_order o','o.clinicid=c.id','LEFT')
+				->join('sy_ordermore om','om.orderid=o.orderid','LEFT')
+				->join('sy_userfield uf','o.serverpersonid=uf.uid','LEFT')
+				->join('sy_user u','u.id=o.serverpersonid','LEFT')
+				->join('sy_user uu','uu.id=o.uid','LEFT')
+				->where(['c.id'=>$clinicId,'o.type'=>2])
+				->field([
+					'o.content','o.orderid','om.starttime',
+					'om.endtime','o.alltime','o.sytime',
+					'om.number','o.type',$consoltSql.' as consult_con',
+					'uf.realname','u.avatarurl','uu.gender','uu.nickname','o.topic'
+				])
+				->order('o.createtime','desc')
+				->limit(10)
+				->select();
+		// 评论
+		$commentData = $clinic->getComments($clinicId,10);
+		// 机构合作记录
+		$recordData = $relevant->getAllClinicRele($clinicId,10);
+		$clinicData = [
+			'listen_orders'=>$listenOrderData,
+			'consult_orders'=>$consultOrderData,
+			'comments'=>$commentData,
+			'relevant'=>$recordData,
+		];
+		return json(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$clinicData]);
+	}
+
+	/**
+	 * 机构动态（订单）
+	 */
+	public function trendsOrders()
+	{
+		$request = Request::instance();
+		$clinicId = input('param.clinic_id');
+		$type = input('param.type',0);
+		$clinic = new ClinicModel;
+		$consoltSql = Db::name('ordermore')->alias('om')->where('om.orderid=o.orderid')->field('count(*)')->buildSql();
+		switch ($type) {
+			case 0:// 全部
+				$clinicData = $clinic->alias('c')
+				->join('sy_order o','o.clinicid=c.id','LEFT')
+				->join('sy_ordermore om','om.orderid=o.orderid','LEFT')
+				->join('sy_listenrecord ol','ol.orderid=o.orderid','LEFT')
+				->join('sy_userfield uf','o.serverpersonid=uf.uid','LEFT')
+				->join('sy_user u','u.id=o.serverpersonid','LEFT')
+				->join('sy_user uu','uu.id=o.uid','LEFT')
+				->where(['c.id'=>$clinicId])
+				->field(['ol.stime','ol.etime','o.content','o.orderid','om.starttime','om.endtime','o.alltime','o.sytime','om.number','o.type',$consoltSql.' as consult_con','uf.realname','u.avatarurl','uu.gender','uu.nickname','o.topic'])
+				->order('o.createtime','desc')
+				->paginate(20);
+				break;
+
+			case 1:// 倾听
+				$clinicData = $clinic->alias('c')
+				->join('sy_order o','o.clinicid=c.id','LEFT')
+				->join('sy_listenrecord ol','ol.orderid=o.orderid','LEFT')
+				->join('sy_userfield uf','o.serverpersonid=uf.uid','LEFT')
+				->join('sy_user u','u.id=o.serverpersonid','LEFT')
+				->join('sy_user uu','uu.id=o.uid','LEFT')
+				->where(['c.id'=>$clinicId,'o.type'=>1])
+				->field(['ol.stime','ol.etime','o.content','o.orderid','o.alltime','o.sytime','o.type','uf.realname','u.avatarurl','uu.gender','uu.nickname','o.topic'])
+				->order('o.createtime','desc')
+				->paginate(20);
+				break;
+			case 2:// 咨询
+				$clinicData = $clinic->alias('c')
+				->join('sy_order o','o.clinicid=c.id','LEFT')
+				->join('sy_ordermore om','om.orderid=o.orderid','LEFT')
+				->join('sy_userfield uf','o.serverpersonid=uf.uid','LEFT')
+				->join('sy_user u','u.id=o.serverpersonid','LEFT')
+				->join('sy_user uu','uu.id=o.uid','LEFT')
+				->where(['c.id'=>$clinicId,'o.type'=>2])
+				->field(['o.content','o.orderid','om.starttime','om.endtime','o.alltime','o.sytime','om.number','o.type',$consoltSql.' as consult_con','uf.realname','u.avatarurl','uu.gender','uu.nickname','o.topic'])
+				->order('o.createtime','desc')
+				->paginate(20);
+			    break;
+			
+			default:
+				$clinicData = [];
+				break;
 		}
+		return json(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$clinicData]);
 	}
 
 	/**
@@ -417,7 +514,7 @@ class Clinic extends Base
 		$depositTotal = $deposit->alias('cd')->where('c.id=cd.clinic_id')->where(['cd.add_subtract'=>0])->field('sum(cd.charging_money)')->buildSql();
 		$clinics = $clinic->alias('c')
 		->join('sy_clinic_closure cc','cc.clinic_id=c.id','LEFT')
-		->join('sy_clinic_deposit cd','cd.clinic_id=c.id','RIGHT')
+		->join('sy_clinic_deposit cd','cd.clinic_id=c.id')
 		->where(function($query)use($post){
 			if(!empty($post['clinic_id'])){
 				$query->where(['c.id'=>$post['clinic_id']]);
@@ -457,6 +554,7 @@ class Clinic extends Base
 		$card->card_bank = bankInfo($card->card_number);
 		if(!empty($payordeduct) && $payordeduct=='pay'){ // 充值记录
 			$bondWhere['clinic_id'] = $clinicId;
+			$bondWhere['pay_state'] = 1;
 			$queryData = $bond
 			->where($bondWhere)
 			->field([
@@ -572,7 +670,9 @@ class Clinic extends Base
 		->find();
 		// 银行卡信息
 		$bankCard = $card->where(['card_id'=>$closureData['card_id']])->find();
-		$bankCard->card_bank = bankInfo($bankCard->card_number);
+		if($bankCard){
+			$bankCard->card_bank = bankInfo($bankCard->card_number);
+		}
 		// 保证金余额
 		$balance = $deposit->getBalance($closureData['clinic_id']);
 		// 总共缴纳过的金额
@@ -601,30 +701,56 @@ class Clinic extends Base
 	 */
 	public function editClosureStatus()
 	{
-		$closureId = input('param.closure_id');
+		$clinicId = input('param.clinic_id');
+		// 0 驳回  1 通过
+		$action = input('param.action');
+		$statusDe = [0=>-1,1=>2];
 		$closure = new ClinicClosure;
 		$clinic = new ClinicModel;
 		$deposit = new ClinicDeposit;
-		$closureData = $closure->where(['closure_id'=>$closureId])->find();
+		$nowTime = time();
+		
+		$closureData = $closure->where(['clinic_id'=>$clinicId,'progress_status'=>['<',2]])->find();
+		if(!$closureData){
+			return json(['success'=>false,'code'=>'006','message'=>'没有查询到申请记录！']);
+		}
 		$closureData->startTrans();
 		$clinic->startTrans();
-		$deposit->startTrans();
 		if($closureData->getData('progress_status')!=1){
-			return json(['success'=>false,'code'=>'007','message'=>"当前状态不能不能通过"]);
+			return json(['success'=>false,'code'=>'007','message'=>"当前状态不能不能操作"]);
 		}
-		$closureData->progress_status = 2;
-		$clinicRes = $clinic->editData($closureData->clinic_id,['status'=>-6,'run_status'=>2]);
-		$deduRes = $deposit->deduction($closureData->clinic_id,$closureData->deposit_money,'机构注销扣除余额');
-		if($closureData->save() && $clinicRes && $deduRes){
-			$closureData->commit();
-			$clinic->commit();
-			$deposit->commit();
-			return json(['success'=>true,'code'=>'000','message'=>'已通过']);
+		if($action==1){
+			$deposit->startTrans();
+			$closureData->progress_status = 2;
+			$clinicRes = $clinic->editData($closureData->clinic_id,['status'=>-6,'run_status'=>2]);
+			$deduRes = $deposit->deduction($closureData->clinic_id,$closureData->deposit_money,'机构注销扣除余额');
+			$closureData->update_at = $nowTime;
+			if($closureData->save() && $clinicRes && $deduRes){
+				$closureData->commit();
+				$clinic->commit();
+				$deposit->commit();
+				return json(['success'=>true,'code'=>'000','message'=>'操作成功']);
+			}else{
+				$closureData->rollback();
+				$clinic->rollback();
+				$deposit->rollback();
+				return json(['success'=>false,'code'=>"006",'message'=>"操作失败，请稍后重试！"]);
+			}
+		}else if($action==0){
+			$closureData->progress_status = -1;
+			$closureData->update_at = $nowTime;
+			$clinicRes = $clinic->editData($closureData->clinic_id,['status'=>2]);
+			if($closureData->save() && $clinicRes){
+				$closureData->commit();
+				$clinic->commit();
+				return json(['success'=>true,'code'=>'000','message'=>'操作成功']);
+			}else{
+				$closureData->rollback();
+				$clinic->rollback();
+				return json(['success'=>false,'code'=>"006",'message'=>"操作失败，请稍后重试！"]);
+			}
 		}else{
-			$closureData->rollback();
-			$clinic->rollback();
-			$deposit->rollback();
-			return json(['success'=>false,'code'=>"006",'message'=>"通过出错，请稍后重试！"]);
+			return json(['success'=>false,'code'=>'012','message'=>"没有预定义的参数"]);
 		}
 	}
 
@@ -636,14 +762,30 @@ class Clinic extends Base
 		// 通过 驳回
 		$examine = input('param.examine');
 		$clinicId = input('param.clinic_id');
+		$reason = input('param.reason','请仔细填写');
 		$clinic = new ClinicModel;
+		$innermail = new InnerMail;
 		if($clinic->where('id',$clinicId)->value('apply_schedule')!=2){
 			return json(['success'=>false,'code'=>"012",'message'=>'当前状态不能修改']);
 		}
 		if($examine==0){
 			$result = $clinic->refuse($clinicId);
+			$innermail->addInnerMail(
+				'资料审核未通过！',
+				3,
+				'您的帐号申请未能通过审核，原因如下：'.$reason,
+				$clinicId,
+				4
+			);
 		}else if($examine==1){
 			$result = $clinic->adopt($clinicId,true);
+			$innermail->addInnerMail(
+				'恭喜审核通过！',
+				3,
+				'审核通过！请添加老师，继续您的尚言心理旅程吧～',
+				$clinicId,
+				4
+			);
 		}else{
 			return json(['success'=>false,'code'=>"012",'message'=>'为识别']);
 		}
@@ -707,7 +849,7 @@ class Clinic extends Base
 		$clinicId = input('param.clinic_id');
 		// up down
 		$type = input('param.type');
-		$vali = $this->validate('ClinicValidate.shelf');
+		$vali = $this->validate(['clinic_id'=>$clinicId,'type'=>$type],'ClinicValidate.shelf');
 		if($vali!==true){
 			return json(['success'=>false,'code'=>"002",'message'=>$vali]);
 		}
@@ -716,7 +858,7 @@ class Clinic extends Base
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'修改完成']);
 		}else{
-			return json(['success'=>false,'code'=>'006','message'=>'当前状态不能修改']);
+			return json(['success'=>false,'code'=>'006','message'=>'无法修改，请确保该机构的审核已通过且保证金余额大于等于'.config('deoisit')]);
 		}
 	}
 
@@ -761,14 +903,6 @@ class Clinic extends Base
 		}else{
 			return json(['success'=>false,'code'=>'006','message'=>'修改出错，请稍后重试！']);
 		}
-	}
-
-	/**
-	 * 添加机构入驻信息
-	 */
-	public function inSyInfo()
-	{
-		
 	}
 
 	/**
@@ -844,6 +978,54 @@ class Clinic extends Base
 		// 设置有效时间2小时
 		$redis->expireAt('clinic_editimg_'.$clinicId.'_'.$str,time()+60*60+2);
 		
-		return json(['success'=>true,'code'=>'000','message'=>'上传完成','data'=>['filename'=>$filename['filename'],'no'=>$str]]);
+		return json([
+			'success'=>true,
+			'code'=>'000',
+			'message'=>'上传完成',
+			'data'=>['filename'=>$filename['filename'],'no'=>$str]
+		]);
 	}
-}
+
+	/**
+	 * 已关停机构申请重新开启
+	 */
+	public function reOpenClinic()
+	{
+		$clinicId = input('param.clinic_id');
+		// 0 拒绝。1 开启
+		$action = input('param.action');
+		$nowTime = time();
+		$statusDe = [0=>-7,1=>2];
+		$clinic = new ClinicModel;
+		$clinicData = $clinic->get($clinicId);
+		if($clinicData->getData('status')!=-8){
+			return json(['success'=>false,'code'=>'012','message'=>'您当前状态不可也无需执行此操作']);
+		}
+		if(!array_key_exists($action, $statusDe)){
+			return json(['success'=>false,'code'=>'012','message'=>'没有预定义的参数']);
+		}
+		if($action==0){
+			$insertData = [];
+			$blacklist = new Blacklist;
+			$insertData['reason_other'] = '已关停被拒绝重新开启';
+			$insertData['client_id'] = $clinicId;
+			$insertData['reason'] = 5;
+			$insertData['type'] = 2;
+			$result = $blacklist->insertData($insertData,'clinic',$clinicId);
+			if($result['success']){
+				return json(['success'=>true,'code'=>'000','message'=>'操作成功！']);
+			}else{
+				return json($result);
+			}
+		}else{
+			$clinicData->status = 2;
+			$clinicData->update_at = $nowTime;
+			if($clinicData->save()){
+				return json(['success'=>true,'code'=>'000','message'=>'操作成功！']);
+			}else{
+				return json(['success'=>false,'code'=>'006','messaeg'=>'操作出错，请稍后再试！']);
+			}
+		}
+		
+	}
+}	

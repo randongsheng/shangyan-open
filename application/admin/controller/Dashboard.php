@@ -151,6 +151,7 @@ class Dashboard
             $where = [];
             $where['add_time'] = ['between',$data['stime'].','.$data['etime']];
             $where['status'] = 3;
+            $where['clicknum'] = ['<>',0];
             $top = Db::name('articles')->field(['title',"clicknum"])->where($where)->order('clicknum desc')->limit(10)->select();
             //echo Db::name('order o')->getLastSql();
 

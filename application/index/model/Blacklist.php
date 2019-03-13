@@ -30,13 +30,11 @@ class Blacklist extends Model
     	switch ($client) {
     		case 'clinic':
     			$clinic = Clinic::find($clientId);
-                if($clinic->getData('status')!=2){
+                if(!in_array($clinic->getData('status'),[2,-8])){
                     return ['success'=>false,'message'=>'当前状态不能修改'];
                 }
                 $clinic->status = -7;
-                if($clinic->run_status==1){
-                    $clinic->run_status = 0;
-                }
+                $clinic->run_status = 2;
     			if(!$clinic->save()){
     				return ['success'=>false,'message'=>'机构或已经加入黑名单'];
     			}
@@ -107,9 +105,7 @@ class Blacklist extends Model
     		case 'clinic':
     			$clinic = Clinic::find($clientId);
     			$clinic->status = 2;
-                if($clinic->run_status==0){
-                    $clinic->run_status = 1;
-                }
+                $clinic->run_status = 0;
     			if(!$clinic->save()){
     				return false;
     			}
@@ -146,7 +142,7 @@ class Blacklist extends Model
 
     public function getReasonAttr($value)
     {
-        $reasonDe = [0=>'理由1',1=>"理由二",2=>'里有三'];
+        $reasonDe = [0=>'理由1',1=>"理由二",2=>'理由二',3=>'理由二',4=>'理由二',5=>'其他'];
         return $reasonDe[$value];
     }
 

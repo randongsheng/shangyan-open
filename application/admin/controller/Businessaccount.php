@@ -2,7 +2,7 @@
 namespace app\admin\controller;
 use think\Controller;
 use think\Db;
-class Businessaccount extends Controller
+class Businessaccount extends Common
 {
 	//商户业务账列表
 	public function accountList(){
@@ -13,7 +13,7 @@ class Businessaccount extends Controller
 		//默认时间段
 		if (isset($data['time'])) {
 			$time = $data['time'];
-			$now = date('Y-m-d H:i:s');;
+			$now = date('Y-m-d H:i:s');
 			switch ($time)
 			{
 			case 'today':
@@ -44,7 +44,13 @@ class Businessaccount extends Controller
 		if (isset($data['stime'])&&isset($data['etime'])) {
 			# code...
 			$stime = strtotime($data['stime']);
+			if (!$stime){
+                $stime = strtotime(date('Y-m').'-01');
+            }
 			$etime = strtotime($data['etime']);
+            if (!$etime){
+                $etime = time();
+            }
 			//以入账时间为条件(即支付时间)
 			$where['paytime'] = ['between',$stime.','.$etime];
 		}else{
@@ -60,6 +66,7 @@ class Businessaccount extends Controller
     		$clinic_name = $data['clinic_name'];
     		$_where['clinic_name'] = ['like',['%'.$clinic_name,$clinic_name.'%','%'.$clinic_name.'%'],'OR'];
     	}
+    	$_where['status']= ['not in',[-1,0,1]];
     	//分页
     	//总数
     	$count = db('clinic')->field('id,clinic_name')->where($_where)->count();
@@ -117,12 +124,12 @@ class Businessaccount extends Controller
 			$clinic[$key]['settled'] = $settled;
 			$clinic[$key]['unsettled'] = $unsettled;
 		}
-		$list['total'] = ['t_income'=>$t_income,
-						  't_service_charge'=>$t_service_charge,
-						  't_refund_amount'=>$t_refund_amount,
-						  't_settled'=>$t_settled,
-						  't_unsettled'=>$t_unsettled];
-		$list['page'] = ['totalpages'=>$totalpages,'page'=>$page];
+		$list['total'] = ['t_income'=>number_format($t_income,2,".",""),
+						  't_service_charge'=>number_format($t_service_charge,2,".",""),
+						  't_refund_amount'=>number_format($t_refund_amount,2,".",""),
+						  't_settled'=>number_format($t_settled,2,".",""),
+						  't_unsettled'=>number_format($t_unsettled,2,".","")];
+		$list['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
 		$list['list'] = $clinic;
 		$list['all_money'] = $this->getGeneralLedger();
 		// print_r($list);
@@ -138,7 +145,7 @@ class Businessaccount extends Controller
 	public function accountInfo(){
 		$data = input('post.');
 		//默认时间段
-		if (isset($data['time'])) {
+		if ($data['time']) {
 			$time = $data['time'];
 			$now = date('Y-m-d H:i:s');;
 			switch ($time)
@@ -178,6 +185,7 @@ class Businessaccount extends Controller
 		}else{
 			sendJson(-1,'时间与商户id必须填写');
 		}
+//		print_r($where);
 		$count = db('order')->field('orderid,completion_time,type,ordermoney,service_charge,refund_amount,real_income')->where($where)->count();
 		//总页数
     	$pageSize = 10;
@@ -185,6 +193,7 @@ class Businessaccount extends Controller
     	$page = ceil(input('post.page/d',1));
     	$page = $page<=0?1:$page;
 		$order = db('order')->field('orderid,completion_time,paytime,type,ordermoney,service_charge,refund_amount,real_income,status')->where($where)->page($page,$pageSize)->select();
+
 		//总应得
 		$t_real_income = 0;
 		//总用户付款
@@ -204,11 +213,11 @@ class Businessaccount extends Controller
 			//总
 			$t_refund_amount += $value['refund_amount'];
 		}
-		$list['total'] = ['t_real_income'=>$t_real_income,
-						  't_service_charge'=>$t_service_charge,
-						  't_refund_amount'=>$t_refund_amount,
-						  't_ordermoney'=>$t_ordermoney];
-		$list['page'] = ['totalpages'=>$totalpages,'page'=>$page];
+		$list['total'] = ['t_real_income'=>number_format($t_real_income,2,".",""),
+						  't_service_charge'=>number_format($t_service_charge,2,".",""),
+						  't_refund_amount'=>number_format($t_refund_amount,2,".",""),
+						  't_ordermoney'=>number_format($t_ordermoney,2,".","")];
+		$list['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
 		$list['list'] = $order;
 
 		//print_r($list);
@@ -222,6 +231,9 @@ class Businessaccount extends Controller
         }
 		$bankcard = db('clinic_bankcard')->where(['clinic_id'=>$clinic_id])->find();
 		//print_r($bankcard);
+        if (!$bankcard){
+            sendJson(-1,'商户没有绑定银行卡');
+        }
 		$bankcard['clinic_name'] = db('clinic')->where(['id'=>$clinic_id])->value('clinic_name');
 		$bankcard['bank_name'] = $this->bankInfo($bankcard['card_number']);
 		sendJson(1,'商户支付信息',$bankcard);
@@ -249,7 +261,7 @@ class Businessaccount extends Controller
 	 */
 	public function bankInfo($card) {  
 	    //$bankList = json_decode(file_get_contents('F:\phpstudy\PHPTutorial\WWW\tp5.0\public\static\BankName.json'),true);
-	    $bankList = json_decode(file_get_contents('/home/back.chineselvyou.com/public/static/BankName.json'),true);
+	    $bankList = json_decode(file_get_contents('/home/b.shangyanxinli.com/public/static/BankName.json'),true);
 
 	    $card_8 = substr($card, 0, 8);  
 	    if (isset($bankList[$card_8])) {  
@@ -356,9 +368,11 @@ class Businessaccount extends Controller
 		$settle_time = input('post.settle_time');
 		$where = [];
 		if(isset($settle_time)&&!empty($settle_time)){
+		    $settle_time = preg_replace('/-+/i','',$settle_time);
+            $settle_time = substr($settle_time,0,5);
 			$where['settle_id'] = ['like',$settle_time.'%'];
 		}
-		if(isset($settle_id)&&!empty($settle_time)){
+		if(isset($settle_id)&&!empty($settle_id)){
 			$where['settle_id'] = $settle_id;
 		}
 		
@@ -368,8 +382,8 @@ class Businessaccount extends Controller
     	$totalpages = ceil($count/$pageSize);
     	$page = ceil(input('post.page/d',1));
     	$page = $page<=0?1:$page;
-		$list = db('settle_cycle')->where($where)->page($page,$pageSize)->select();
-		$data['page'] = ['page'=>$page,'totalpages'=>$totalpages];
+		$list = db('settle_cycle')->where($where)->page($page,$pageSize)->order('id','desc')->select();
+		$data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
 		$data['list'] = $list;
 		sendJson(1,'结算单列表',$data);
 	}
@@ -394,7 +408,7 @@ class Businessaccount extends Controller
     	$page = ceil(input('post.page/d',1));
     	$page = $page<=0?1:$page;
 		$list = db('settle_cycle_info')->where($where)->page($page,$pageSize)->select();
-		$data['page'] = ['page'=>$page,'totalpages'=>$totalpages];
+		$data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
 		$data['list'] = $list;
 		$data['settle'] = $settle;
 		sendJson(1,'结算单详情',$data);
@@ -443,7 +457,7 @@ class Businessaccount extends Controller
 		$data = [
 			'settle'=>$settle,
 			'bankcard'=>$bankcard,
-			'page'=>['page'=>$page,'totalpages'=>$totalpages],
+			'page'=>['pagesize'=>$pageSize,'page'=>$page,'count'=>$count],
 			'list'=>$list,
 			'settle_amount'=>$settle_amount,
 			'ordermoney'=>$ordermoney,
@@ -451,6 +465,20 @@ class Businessaccount extends Controller
 			'refund_amount'=>$refund_amount
 		];
 		sendJson(1,'商户结算明细',$data);
-		print_r($orderlist);
+//		print_r($orderlist);
+	}
+	/**
+     * 确定结算
+     */
+    public function sureSettle()
+    {
+        $settle_id = input('post.settle_id');
+        $settle_status = \db('settle_cycle')->where(['settle_id'=>$settle_id])->value('settle_status');
+        if ($settle_status == 1)
+        {
+            sendJson(-1,'该结算单已经结算过了');
+        }
+        \db('settle_cycle')->where(['settle_id'=>$settle_id])->update(['settle_status'=>1]);
+        sendJson(1,'该结算单结算成功');
 	}
 }

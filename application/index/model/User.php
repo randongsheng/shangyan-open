@@ -12,6 +12,7 @@ namespace app\index\model;
 
 use think\Model;
 use app\index\model\Topic;
+use think\Validate;
 
 /**
  * 
@@ -82,6 +83,15 @@ class User extends Model
     }
 
     /**
+     * 头像地址
+     */
+    public function getAvatarurlAttr($value)
+    {
+        if(Validate::is($value,'url') || empty($value)) return $value;
+        return config('save_protocol').rtrim(config('save_url'),'/').'/'.ltrim($value,'/');
+    }
+
+    /**
      * 转换 create_at
      */
     public function getRegtimeAttr($value)
@@ -93,6 +103,30 @@ class User extends Model
      * 转时间
      */
     public function getCreateAtAttr($value)
+    {
+        return date('Y-m-d H:i:s',$value);
+    }
+
+    /**
+     * 秒单位转换
+     */
+    public function getSytimeAttr($value)
+    {
+        return time_to_date($value);
+    }
+
+    /**
+     * 转时间
+     */
+    public function getStimeAttr($value)
+    {
+        return date('Y-m-d H:i:s',$value);
+    }
+
+    /**
+     * 转时间
+     */
+    public function getEtimeAttr($value)
     {
         return date('Y-m-d H:i:s',$value);
     }

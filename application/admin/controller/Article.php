@@ -43,15 +43,15 @@ class Article extends Common
     		# code...
     		# 标签查询
     		$keywords = $data['keywords'];
-    		$_where1['title'] = ['like',['%'.$keywords,$keywords.'%','%'.$keywords.'%'],'OR'];
-    		$topicids = db('topic')->where($_where1)->column('id');
-    		
-    		$arr = [];
-    		foreach ($topicids as $topicid) {
-    			# code...
-    			$arr[] = '%,'.$topicid.',%';
-    		}
-    		$where['keywords'] = ['like',$arr,'OR'];
+//    		$_where1['keywords'] = ['like',['%,'.$keywords.',%']];
+//    		$topicids = db('topic')->where($_where1)->column('id');
+//
+//    		$arr = [];
+//    		foreach ($topicids as $topicid) {
+//    			# code...
+//    			$arr[] = '%,'.$topicid.',%';
+//    		}
+    		$where['keywords'] = ['like',"%,".$keywords.",%",'OR'];
     	}
     	//$where['status'] = ['<>',7];
         $neq = 'status <> 7';
@@ -61,9 +61,9 @@ class Article extends Common
     	$page = ceil(input('post.page',1));
     	$page = $page<=0?1:$page;
     	//print_r($totalpages);
-    	$data['page'] = ['totalpages'=>$totalpages,'page'=>$page,'count'=>$count];
-    	$list = db('articles a')->field('id,title,description,author_name,clinic_name,update_at,keywords,status')->page($page,$pageSize)->where($where)->where($neq)->select();
-    
+    	$data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
+    	$list = db('articles a')->field('id,title,description,author_name,clinic_name,update_at,keywords,status')->page($page,$pageSize)->where($where)->where($neq)->order('id desc')->select();
+//        echo db('articles a')->getLastSql();
     	foreach ($list as $k => $v) {
 	            $list[$k]['topic'] = $this->getTopicStr($v['keywords']);
     	}
@@ -84,14 +84,15 @@ class Article extends Common
     	$content = input('post.content');
     	$description = input('post.description');
     	if (!$description) {
-    		//把接收到的的HTML实体转换为字符
-            $html_string = htmlspecialchars_decode($content);
-            //将空格替换成空
-            $str = str_replace(" ","",$html_string);
-            //函数剥去字符串中的HTML、XML以及PHP的标签,获取纯文本内容
-            $contents = strip_tags($str);
-            //返回字符串中的前60字符串长度的字符
-            $description = mb_substr($contents,0,32,"utf-8"); 
+    	    sendJson(-1,'描述必须填写');
+//    		//把接收到的的HTML实体转换为字符
+//            $html_string = htmlspecialchars_decode($content);
+//            //将空格替换成空
+//            $str = str_replace(" ","",$html_string);
+//            //函数剥去字符串中的HTML、XML以及PHP的标签,获取纯文本内容
+//            $contents = strip_tags($str);
+//            //返回字符串中的前60字符串长度的字符
+//            $description = mb_substr($contents,0,32,"utf-8");
     	}
     	if(!$title||!$content){
     		sendJson(-1,'标题和内容不能为空');
@@ -100,6 +101,7 @@ class Article extends Common
     	$author_name = input('post.author_name','尚小言');
     	$author = input('post.author',0);
     	$thumbnail = input('post.thumbnail');
+        $picurl = input('post.picurl');
     	$data = [
     		'title'=>$title,
     		'content'=>$content,
@@ -110,6 +112,7 @@ class Article extends Common
     		'clinic_name'=>'尚言心理',
     		'keywords'=>$keywords,
     		'thumbnail'=>$thumbnail,
+            'picurl'=>$picurl,
     		'status'=>$saveType
     	];        
     	$res = db('articles')->insert($data);
@@ -144,14 +147,15 @@ class Article extends Common
     	$content = input('post.content');
     	$description = input('post.description');
     	if (!$description) {
-    		//把接收到的的HTML实体转换为字符
-            $html_string = htmlspecialchars_decode($content);
-            //将空格替换成空
-            $str = str_replace(" ","",$html_string);
-            //函数剥去字符串中的HTML、XML以及PHP的标签,获取纯文本内容
-            $contents = strip_tags($str);
-            //返回字符串中的前60字符串长度的字符
-            $description = mb_substr($contents,0,32,"utf-8"); 
+    	    sendJson(-1,'描述必须填写');
+//    		//把接收到的的HTML实体转换为字符
+//            $html_string = htmlspecialchars_decode($content);
+//            //将空格替换成空
+//            $str = str_replace(" ","",$html_string);
+//            //函数剥去字符串中的HTML、XML以及PHP的标签,获取纯文本内容
+//            $contents = strip_tags($str);
+//            //返回字符串中的前60字符串长度的字符
+//            $description = mb_substr($contents,0,32,"utf-8");
     	}
     	if(!$title||!$content){
     		sendJson(-1,'标题和内容不能为空');
@@ -160,6 +164,7 @@ class Article extends Common
     	$author_name = input('post.author_name','尚小言');
     	$author = input('post.author',0);
     	$thumbnail = input('post.thumbnail');
+        $picurl = input('post.picurl');
     	$data = [
     		'title'=>$title,
     		'content'=>$content,
@@ -170,6 +175,7 @@ class Article extends Common
     		'clinic_name'=>'尚言心理',
     		'keywords'=>$keywords,
     		'thumbnail'=>$thumbnail,
+            'picurl'=>$picurl,
     		'status'=>$saveType
     	];        
     	$res = db('articles')->where(['id'=>$id])->update($data);
@@ -181,14 +187,14 @@ class Article extends Common
     }
     //修改状态
     public function updateStatus(){
-    	$id = input('post.id');
-    	$status = input('post.status');
-    	$res = db('articles')->where(['id'=>$id])->update(['status'=>$status]);
-    	if($res){
-    		sendJson(1,'修改成功');
-    	}else{
-    		sendJson(-1,'修改失败');
-    	}
+//    	$id = input('post.id');
+//    	$status = input('post.status');
+//    	$res = db('articles')->where(['id'=>$id])->update(['status'=>$status]);
+//    	if($res){
+//    		sendJson(1,'修改成功');
+//    	}else{
+//    		sendJson(-1,'修改失败');
+//    	}
     }
     //文章评论
     //获取评论内容
@@ -217,7 +223,7 @@ class Article extends Common
             $list[$key]['sonnum'] = $sonmum;
         }
 
-        $data['page'] = ['totalpages'=>$totalpages,'page'=>$page,'count'=>$count];
+        $data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
         $data['list'] = $list;
         sendJson(1,'成功',$data);
     }
@@ -230,7 +236,7 @@ class Article extends Common
     //删除文章
     public function delArticle(){
         $id = input('post.id');
-        db('articles')->where(['id'=>$id])->update(['status'=>7]);
+        db('articles')->where(['id'=>$id])->update(['status'=>7,'update_at'=>time()]);
         sendJson(1,'删除文章成功');
     }
     //文章上架
@@ -240,7 +246,7 @@ class Article extends Common
         if ($status != 2 &&$status != 4){
             sendJson(-1,'文章状态不为待上架或下架');
         }
-        db('articles')->where(['id'=>$id])->update(['status'=>3]);
+        db('articles')->where(['id'=>$id])->update(['status'=>3,'update_at'=>time()]);
         sendJson(1,'文章上架');
     }
     //文章下架

@@ -31,9 +31,20 @@ function authCheck($rule)
 {
     $control = explode('/', $rule)['0'];
     //如果允许login与index不需要权限控制,写在这里
-    if(in_array($control, ['login', 'index'])){
+    if(in_array($control, ['login', 'index','auth'])){
         return true;
     }
+    $control_name = explode('/', $rule)['0'];
+    $action_name = explode('/', $rule)['1'];
+    //判断节点中是否有这个节点,如果节点表中没有,则全部通过
+//    var_dump($rule);
+//    var_dump(session('rule'));
+//    var_dump(in_array($rule, session('rule')));
+    $is_have = db('node')->where(['control_name'=>$control_name,'action_name'=>$action_name])->find();
+    if (!$is_have){
+        return true;
+    }
+
     if(in_array($rule, session('rule'))){
         return true;
     }
@@ -46,9 +57,9 @@ function authCheck($rule)
  */
 function time_to_date($s) {
     if($s<=3600){
-        return floor($s / 60).'分';
+        return floor($s / 60).'分钟';
     }else if($s>3600){
-        return round($s / 3600,2).'时';
+        return round($s / 3600,2).'小时';
     }
 }
 
@@ -164,4 +175,50 @@ function put_oss($name, $imgPath, $imgs = []) {
         $filenameEnd = $imgPath[$name].$path.$filename;
     }
     return ['success'=>true,'code'=>'000','message'=>'上传完成','filename'=>$filenameEnd];
+}
+/**
+ * 整理出tree数据 ---  layui tree
+ * @param $pInfo
+ * @param $spread
+ */
+function getTree($pInfo, $spread = true)
+{
+
+    $res = [];
+    $tree = [];
+    //整理数组
+    foreach($pInfo as $key=>$vo){
+
+        if($spread){
+            $vo['spread'] = true;  //默认展开
+        }
+        $res[$vo['id']] = $vo;
+        $res[$vo['id']]['children'] = [];
+    }
+    unset($pInfo);
+
+    //查找子孙
+    foreach($res as $key=>$vo){
+        if(0 != $vo['pid']){
+            $res[$vo['pid']]['children'][] = &$res[$key];
+        }
+    }
+
+    //过滤杂质
+    foreach( $res as $key=>$vo ){
+        if(0 == $vo['pid']){
+            $tree[] = $vo;
+        }
+    }
+    unset( $res );
+
+    return $tree;
+}
+/**
+ * 对象转换成数组
+ * @param $obj
+ */
+function objToArray($obj)
+{
+    return json_decode(json_encode($obj), true);
 }

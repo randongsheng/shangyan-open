@@ -7,18 +7,16 @@ class common extends Controller
 	public function _initialize()
     {
         //权限管理,做好添加再打开
-//        // 检查缓存
-//        $this->cacheCheck();
-//
-//        // 检测权限
-//        $control = lcfirst(request()->controller());
-//        $action = lcfirst(request()->action());
-//
-//        if(empty(authCheck($control . '/' . $action))){
-//            sendJson(-1,'没有权限');
-//        }else{
-//            echo '有权限';
-//        }
+        // 检查缓存
+        $this->cacheCheck();
+
+        // 检测权限
+        $control = lcfirst(request()->controller());
+        $action = lcfirst(request()->action());
+
+        if(empty(authCheck($control . '/' . $action))){
+            sendJson(-1,'没有权限');
+        }
     }
     private function cacheCheck()
     {

@@ -8,6 +8,7 @@ use app\index\model\Clinic;
 use app\index\model\Blacklist;
 use think\Session;
 use think\Db;
+use think\Validate;
 
 class User extends Base
 {
@@ -18,8 +19,10 @@ class User extends Base
 	{
 		$request = Request::instance();
 		// 用户ID 昵称 性别 是否测试过 是否倾诉过 是否咨询过 注册时间[today|yesterday] 开始时间(筛选注册) 结束时间(筛选注册)
-		$post = $request->only(['user_id','nickname','sex','if_test','if_listen','if_consult','regster_time','regster_start_time','regster_end_time','label_id']);
+		$post = $request->only(['user_id','nickname','sex','if_test','if_listen','if_consult','regster_time','regster_start_time','regster_end_time','label_id','actives']);
 		$nowTime = time();
+		$dayFirst = strtotime(date('Ymd 00:00:00',$nowTime));
+		$dayEnd = strtotime(date('Ymd 23:59:59',$nowTime));
 		$userWhere = [];
 		$user = new UserModel;
 		if(!empty($post['user_id'])){
@@ -28,7 +31,7 @@ class User extends Base
 		if(!empty($post['nickname'])){
 			$userWhere['u.nickname'] = ['like','%'.$post['nickname'].'%'];
 		}
-		if(!empty($post['sex'])){
+		if(isset($post['sex']) && $post['sex']!=''){
 			$userWhere['u.gender'] = $post['sex'];
 		}
 		// 查找标签ID（表结构被迫）
@@ -36,7 +39,7 @@ class User extends Base
 			$userWhere['u.topic'] = ['like','%,'.trim($post['label_id']).',%'];
 		}
 		// 不能同时筛选三个条件（需要些10种不同sql）
-		if(!empty($post['if_test'])||!empty($post['if_listen'])||!empty($post['if_consult'])){
+		/*if((isset($post['if_test'])&&$post['if_test']!='')||(isset($post['if_listen'])&&$post['if_listen']!='')||(isset($post['if_consult'])&&$post['if_consult']!='')){
 			$userWhere['u.id'] = ['in',
 			function($query)use($post){
 				if(!empty($post['if_test'])&&$post['if_test']==1){
@@ -50,6 +53,44 @@ class User extends Base
 					$query->table('sy_order')->alias('o')->where('o.uid=u.id')->where('o.type',2)->field('uid');
 				}
 			}];
+		}*/
+		if(isset($post['if_test'])&&$post['if_test']!=''){
+			if($post['if_test']==0){
+				$w = 'not in';
+			}else{
+				$w = 'in';
+			}
+			$userWhere['u.id'] = [$w,
+				function($query)use($post){
+					// 是否测试过
+					$query->table('sy_examorder')->alias('e')->where('e.uid=u.id')->field('uid');
+				}];
+		}
+
+		if(isset($post['if_listen'])&&$post['if_listen']!=''){
+			if($post['if_listen']==0){
+				$w = 'not in';
+			}else{
+				$w = 'in';
+			}
+			$userWhere['u.id'] = [$w,
+				function($query)use($post){
+					// 是否倾诉过
+					$query->table('sy_order')->alias('o')->where('o.uid=u.id')->where('o.type',1)->field('uid');
+				}];
+		}
+
+		if(isset($post['if_consult'])&&$post['if_consult']!=''){
+			if($post['if_consult']==0){
+				$w = 'not in';
+			}else{
+				$w = 'in';
+			}
+			$userWhere['u.id'] = [$w,
+				function($query)use($post){
+					// 是否咨询过
+					$query->table('sy_order')->alias('o')->where('o.uid=u.id')->where('o.type',2)->field('uid');
+				}];
 		}
 		// 昨天今天注册用户
 		if(!empty($post['regster_time']) && $post['regster_time']=='today'){
@@ -88,14 +129,19 @@ class User extends Base
 		$users = $user
 		->alias('u')
 		->where($userWhere)
-		->where(function($query)use($post){
-			if(!empty($post['regster_start_time'])&&!empty($post['regster_start_time'])){
-				$query->where('u.regtime','between',[$post['regster_start_time'],$post['regster_start_time']]);
+		->where(function($query)use($post,$dayFirst,$dayEnd){
+			if(!empty($post['regster_start_time'])&&!empty($post['regster_end_time'])){
+				$query->where('u.regtime','between',[$post['regster_start_time'],$post['regster_end_time']]);
+			}
+			if(!empty($post['actives'])&&$post['actives']==1){
+				$query->whereTime('u.last_login_time','between',[$dayFirst,$dayEnd]);
 			}
 		})
 		->fieldRaw('id,role,status,nickname,mobile,level,regtime,age,gender,avatarurl,'.$examResultSql.' as test_con,'.$listenSql.' as listen_con,'.$consultSql.' as consult_con')
 		->order('u.regtime','desc')
 		->paginate(20);
+		// ->select(false);
+		// print_r($users);die;
 		if($users){
 			return $this->message(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$users]);
 		}else{
@@ -147,21 +193,35 @@ class User extends Base
 	/**
 	 * 用户评论列表
 	 */
-	public function getUserComment(){
+	public function getUserComment()
+	{
         $uid = input('param.user_id');
         $list = Db::name('comment c')
         ->field('c.id,articleid,a.title articletitle,unick,c.content,c.createtime,u.avatarurl')
         ->join('articles a','c.articleid = a.id','LEFT')
         ->join('user u','c.uid = u.id')
         ->where(['uid'=>$uid,'replyid'=>0])
-        ->select();
+        ->paginate(15);
         if(!$list){
         	return json(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>[]]);
         }
-        foreach ($list as $key => $value) {
+        $list->each(function($data){
+        	list($data['soncount'],$data['soncount']) = $this->getSonComment($data['id']);
+        	$data['fabulous'] = db('fabulous')->where(['type'=>2,'id'=>$data['id']])->count();
+        	if(!Validate::is($data['avatarurl'],'url') && !empty($data['avatarurl'])){
+            	$data['avatarurl'] = config('save_protocol').rtrim(config('save_url'),'/').'/'.ltrim($data['avatarurl'],'/');
+            }
+            $data['createtime'] = date('Y-m-d H:i:s',$data['createtime']);
+            return $data;
+        });
+        /*foreach ($list as $key => $value) {
             list($list[$key]['soncount'],$list[$key]['son']) = $this->getSonComment($value['id']);
             $list[$key]['fabulous'] = db('fabulous')->where(['type'=>2,'id'=>$value['id']])->count();
-        }
+            if(!Validate::is($list[$key]['avatarurl'],'url') && !empty($list[$key]['avatarurl'])){
+            	$list[$key]['avatarurl'] = config('save_protocol').rtrim(config('save_url'),'/').'/'.ltrim($list[$key]['avatarurl'],'/');
+            }
+            $list[$key]['createtime'] = date('Y-m-d H:i:s',$list[$key]['createtime']);
+        }*/
 		return json(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$list]);        
     }
 
@@ -183,7 +243,7 @@ class User extends Base
     public function getUserFabulous()
     {
         $uid = input('param.user_id');
-        $list = Db::name('fabulous f')->join('articles a','f.id = a.id')->where(['uid'=>$uid,'f.status'=>1,'f.type'=>1])->select();
+        $list = Db::name('fabulous f')->join('articles a','f.id = a.id')->where(['uid'=>$uid,'f.status'=>1,'f.type'=>1])->paginate(15);
         return json(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$list]);
     }
 
@@ -193,7 +253,7 @@ class User extends Base
     public function getUserCollection()
     {
         $uid = input('param.user_id');
-        $list = Db::name('collentiom c')->join('articles a','c.articleid = a.id')->where(['uid'=>$uid])->select();
+        $list = Db::name('collentiom c')->join('articles a','c.articleid = a.id')->where(['uid'=>$uid])->paginate(15);
         return json(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$list]);
     }
 
@@ -326,7 +386,7 @@ class User extends Base
 		$teacher = new Teacher;
 		$clinic = new Clinic;
 		$where = [];
-		if(!empty($post['attr'])){
+		if(isset($post['attr'])&&$post['attr']!=''){
 			$where['type'] = $post['attr'];
 		}
 		if(!empty($post['in_time'])){
@@ -334,12 +394,22 @@ class User extends Base
 			$endTime = strtotime(date('Y-m-d 23:59:59',strtotime($post['in_time'])));
 			$where['create_at'] = ['between',[$startTime,$endTime]];
 		}
-		if(!empty($post['key_words'])){
-			// $where['reason_other'] = 
-		}
+
 		$where['valid_is'] = 1;
-		$blacklist = Blacklist::
-		where($where)
+		$blacklist = Blacklist::alias('bl')
+		->join('sy_user u','bl.client_id=u.id','LEFT')
+		->join('sy_clinic c','bl.client_id=c.id','LEFT')
+		->join('sy_teacher t','bl.client_id=t.teacher_id','LEFT')
+		->where($where)
+		->where(function($query)use($post){
+			if(!empty($post['key_words'])){
+				$query->whereOr('u.nickname','like','%'.$post['key_words'].'%')
+				->whereOr('c.clinic_name','like','%'.$post['key_words'].'%')
+				->whereOr('t.teacher_name','like','%'.$post['key_words'].'%');
+			}
+			return $query;
+		})
+		->field('bl.*')
 		->order('create_at','desc')
 		->paginate(15);
 		$blacklist->each(function($item)use($user,$teacher,$clinic){

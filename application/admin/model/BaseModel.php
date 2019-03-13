@@ -23,6 +23,9 @@ class BaseModel extends Model
         {
             return $value;
         }
+        if(!$value){
+            return $value;
+        }
         return config('pro_img').$value;
     }
     public function getAnswerpicurlAttr($value)
@@ -31,9 +34,8 @@ class BaseModel extends Model
         {
             return $value;
         }
-        if ($value == null)
-        {
-            return null;
+        if(!$value){
+            return $value;
         }
         return config('pro_img').$value;
     }
@@ -43,18 +45,27 @@ class BaseModel extends Model
         {
             return $value;
         }
+        if(!$value){
+            return $value;
+        }
         return config('pro_img').$value;
     }
     public function getLogoAttr($value)
     {
         if(Validate::is($value,'url')) return $value;
         //$path = config('IMG');
+        if(!$value){
+            return $value;
+        }
         return config('pro_img').$value;//config('save_protocol').config('save_url').$path['clinic_logo'].ltrim($value,'/');
     }
     public function gettHumbnailAttr($value)
     {
         if(Validate::is($value,'url')) return $value;
         //$path = config('IMG');
+        if(!$value){
+            return $value;
+        }
         return config('pro_img').$value;//config('save_protocol').config('save_url').$path['clinic_logo'].ltrim($value,'/');
     }
 }

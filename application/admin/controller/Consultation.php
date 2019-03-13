@@ -22,27 +22,32 @@ class Consultation extends Common
     		$stime = strtotime($data['createtime']);
     		$etime = $stime+86399;
     		$where['createtime'] = ['between',[$stime,$etime]];
-    	}elseif (isset($data['status'])&&!empty($data['status'])) {
+    	}elseif ((isset($data['status'])&&!empty($data['status'])) || ($data['status'] === "0")) {
     		//订单状态
     		# code...
     		$where['o.status'] = $data['status'];
-    	}elseif (isset($data['nickname'])&&!empty($data['nickname'])) {
+    	}
+    	if (isset($data['nickname'])&&!empty($data['nickname'])) {
     		//用户昵称
     		# code...
     		$nickname = $data['nickname'];
+            $_where = [];
     		$_where['nickname'] = ['like',['%'.$nickname,$nickname.'%','%'.$nickname.'%'],'OR'];
     		$uids = db('user')->where($_where)->column('id');
     		// print_r($uids);
     		// die;
     		$where['o.uid'] = ['in',$uids];
-    	}elseif (isset($data['teachername'])&&!empty($data['teachername'])) {
+    	}
+    	if (isset($data['teachername'])&&!empty($data['teachername'])) {
     		//倾听师姓名
     		# code...
+            $_where=[];
     		$teachername = $data['teachername'];
     		$_where['realname'] = ['like',['%'.$teachername,$teachername.'%','%'.$teachername.'%'],'OR'];
     		$uids = db('userfield')->where($_where)->column('uid');
     		$where['serverpersonid'] = ['in',$uids];
-    	}elseif (isset($data['clinic_name'])&&!empty($data['clinic_name'])) {
+    	}
+    	if (isset($data['clinic_name'])&&!empty($data['clinic_name'])) {
     		//机构名称
     		# code...
     		$clinic_name = $data['clinic_name'];
@@ -56,9 +61,9 @@ class Consultation extends Common
     	$page = ceil(input('post.page/d',1));
     	$page = $page<=0?1:$page;
     	//print_r($totalpages);
-    	$data['page'] = ['totalpages'=>$totalpages,'page'=>$page,'count'=>$count];
-    	$list = db('order o')->field('type,orderid,o.createtime,nickname,realname,clinic_name,o.topic,ordermoney,o.status')->join('user u','u.id=o.uid')->join('userfield f','f.uid=o.serverpersonid')->join('clinic c','c.id=o.clinicid')->page($page,$pageSize)->where($where)->select();
-    	// echo db('order o')->getLastSql();
+    	$data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
+    	$list = db('order o')->field('type,orderid,o.createtime,nickname,realname,clinic_name,o.topic,ordermoney,o.status')->join('user u','u.id=o.uid')->join('userfield f','f.uid=o.serverpersonid')->join('clinic c','c.id=o.clinicid')->page($page,$pageSize)->where($where)->order('o.id','desc')->select();
+//    	 echo db('order o')->getLastSql();
     	// die;
     	foreach ($list as $k => $v) {
     		$list[$k]['rest'] = $this->checkOrder($v['orderid']);
@@ -163,6 +168,9 @@ class Consultation extends Common
         }
         $user = new UserModel();
 		$order = db('order')->field('status,orderid,ordermoney,topic,clinicid,paymode,uid,content,serverpersonid,createtime,paytime,completion_time,total_money,consultation_num,hospital_diagnosis')->where(['orderid'=>$orderid])->find();
+		if (!$order){
+		    sendJson(-1,'订单未找到');
+        }
 		$order['topic'] = $this->getTopicStr($order['topic']);
 		$order['num'] = db('ordermore')->where(['orderid'=>$orderid])->count();
         $order['surplus_num'] = db('ordermore')->where(['orderid'=>$orderid,'status'=>0])->count();

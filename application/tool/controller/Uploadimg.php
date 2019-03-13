@@ -10,10 +10,15 @@ class Uploadimg extends Controller
 	public function uploadImg(){
 		//$image = request()->file('image');
         $filePath = $_FILES['image']['tmp_name'];
+        $name = explode('.',$_FILES['image']['name']);
+//        print_r($name);
+//
+//        print_r(end($name));
+        $suffix = end($name);
     	if($filePath){
 //            $str=var_export($image,TRUE);
 //            file_put_contents("/home/back.chineselvyou.com/application/admin/controller/upload1.txt",$str,FILE_APPEND);
-    		$logourl = $this->Qiniu_upload($filePath);
+    		$logourl = $this->Qiniu_upload($filePath,$suffix);
     		//$logourl = $this->upload($image,'image');
 	    	if($logourl == -1){
 	    		sendJson(-1,'上传失败',$logourl);
@@ -46,15 +51,15 @@ class Uploadimg extends Controller
 	/**
      * 七牛上传
      */
-    public function Qiniu_upload($filePath)
+    public function Qiniu_upload($filePath,$suffix)
     {
     	vendor('qiniu.autoload');
         //vendor('qiniu.autoload.php');
         //$config = Config::get('UPLOAD_Qiniu_CONFIG');
-        $accessKey = 'LmqTmjDgkw9jlDdos17lLBZ-3BimlCH-uO1wTqaE';//$config['accessKey'];
-        $secretKey = 'BFjJHhnwd5zMsJMcu8iUGftg7kDja91eztAo6BDh';//$config['secretKey'];
+        $accessKey = '2PE43Z0Y1XP-rBlzm5TDlnF5LdW-w1Yj6YUTp-Wq';//'LmqTmjDgkw9jlDdos17lLBZ-3BimlCH-uO1wTqaE';//$config['accessKey'];
+        $secretKey = 'IubRBvLUDRSpd9ZXx8tp9swB0ZFh3kudItNdk7K9';//'BFjJHhnwd5zMsJMcu8iUGftg7kDja91eztAo6BDh';//$config['secretKey'];
         $auth = new Auth($accessKey, $secretKey);
-        $bucket = 'cloud';//$config['bucket'];// 要上传的空间
+        $bucket = 'activity';//'cloud';//$config['bucket'];// 要上传的空间
         $token = $auth->uploadToken($bucket);// 生成上传 Token
         // 要上传文件的本地路径
         //$filePath = $_FILES['image']['tmp_name'];
@@ -65,7 +70,7 @@ class Uploadimg extends Controller
         // if($info){
         //     $key = $info->getFilename();
         // }else{
-            $key = md5(time()).'.png';
+            $key = md5(time()).'.'.$suffix;
         // }
         // 初始化 UploadManager 对象并进行文件的上传
         $uploadMgr = new UploadManager();
@@ -74,7 +79,7 @@ class Uploadimg extends Controller
         list($ret, $err) = $uploadMgr->putFile($token, $key, $filePath);
         if ($err === null) {
             $data['url'] = $ret['key'];//$config['domain'].$ret['key'];
-            return $data['url'];
+            return config('pro_img').$data['url'];
         }
             return false;
 	}

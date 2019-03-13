@@ -14,6 +14,7 @@ use think\Model;
 use app\index\service\UserField;
 use app\index\model\Topic;
 use app\index\model\Clinic;
+use think\Validate;
 /**
  * 
  */
@@ -39,6 +40,15 @@ class Order extends Model
     {
     	$topic = new Topic;
 	    return implode(',', $topic->getText($value));
+    }
+
+    /**
+     * 头像地址
+     */
+    public function getAvatarurlAttr($value)
+    {
+        if(Validate::is($value,'url') || empty($value)) return $value;
+        return config('save_protocol').rtrim(config('save_url'),'/').'/'.ltrim($value,'/');
     }
 
     /**
@@ -104,4 +114,5 @@ class Order extends Model
     {
         return date('Y-m-d H:i:s',$value);
     }
+
 }

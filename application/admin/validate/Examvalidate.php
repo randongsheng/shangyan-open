@@ -27,7 +27,6 @@ class Examvalidate extends Validate
          */
         'titleid'=>'require',
         'question'=>'require',
-        'weidu'=>'require',
         'json'=>'require',
         'number'=>'require',
     ];
@@ -44,7 +43,6 @@ class Examvalidate extends Validate
          */
         'titleid'=>'测试id不能为空',
         'question'=>'题干不能为空',
-        'weidu'=>'维度不能为空',
         'json'=>'json不能为空',
         'number'=>'number不能为空',
     ];

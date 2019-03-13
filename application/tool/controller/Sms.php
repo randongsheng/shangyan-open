@@ -6,9 +6,9 @@ use Qcloud\Sms\SmsSingleSender;
 class Sms extends Controller
 {
 	public function _initialize(){
-		$this->baseappid=1400160510;
-		$this->baseappkey="2044e705774b5b891b4d949d20478189";
-		$this->basesmsSign="尚言";
+		$this->baseappid=1400184061;
+		$this->baseappkey="a5fa0e5278b30e65888b768fe7e17783";
+		$this->basesmsSign="尚言心理";
 		vendor('Qcloud.Sms.index.php');
 	}
 	public function sendSms($mobile,$content){
@@ -27,7 +27,7 @@ class Sms extends Controller
 	// operation 操作如注册,修改手机号等..
 	// 
 	public function sendCodeSms($mobile,$operation,$code){
-		$templateId = 230394; 
+		$templateId = 274708; 
 		try {
 		    $ssender = new SmsSingleSender($this->baseappid, $this->baseappkey);
 		    $params = [$operation,$code];

@@ -8,14 +8,32 @@ class Innermail extends Common
 		$theme = input('post.theme');
 		$target_role = input('post.target_role');
         $mail_content = input('post.mail_content');
-        if (!$target_role){
+        $to_uid = input('post.to_uid');
+        $to_uid = $to_uid?$to_uid:0;
+        if (!isset($target_role)){
             sendJson(-1,'请选择角色');
         }
 		$role = ['普通用户','倾听师','咨询师','商户'];
 		$target_user = '';
 		if (is_numeric($target_role)) {
 			$target_user = $role[$target_role];
+			if ($to_uid){
+			    if ($target_role == 3){
+			        $to_username = \db('clinic')->where(['id'=>$to_uid])->value('clinic_name');
+                }elseif($target_role == 0){
+                    $to_username = \db('user')->where(['id'=>$to_uid,'role'=>0])->value('nickname');
+                }else{
+                    $to_username = \db('userfield')->where(['uid'=>$to_uid])->value('realname');
+                }
+                if (!$to_username){
+                    sendJson(-1,'没找到要发送的用户,请确认');
+                }
+                $target_user = $target_user."=>".$to_username;
+            }
 		}else{
+            if ($to_uid){
+                sendJson(-1,'多选角色时,不能发给单一用户');
+            }
 			$targetArr = explode(',', $target_role);
 			foreach ($targetArr as $key => $value) {
 				$user[]= $role[$value];
@@ -29,7 +47,8 @@ class Innermail extends Common
 			'target_user'=>$target_user,
 			'target_role'=>$target_role,
 			'mail_content'=>$mail_content,
-			'send_time'=>date('Y-m-d H:i:s')
+			'send_time'=>date('Y-m-d H:i:s'),
+            'to_uid'=>$to_uid
 		];
 		db('inner_mail')->insert($data);
 
@@ -43,6 +62,8 @@ class Innermail extends Common
 		$where = [];
 		$where['target_role'] = ['like','%,'.$role.',%'];
 		$where['mail_status'] = 0;
+        $where['to_uid'] = [['=',0],['=',$uid],'or'];
+        $where['type'] = 0;
 		//获取角色能够收到的所有信息
 		$count = db('inner_mail')->field('id,theme,target_user,mail_content,send_time')->where($where)->count();
 		$pageSize = 10;
@@ -52,6 +73,7 @@ class Innermail extends Common
     	//print_r($totalpages);
     	$data['page'] = ['totalpages'=>$totalpages,'page'=>$page];
 		$list = db('inner_mail')->field('id,theme,target_user,mail_content,send_time')->where($where)->page($page,$pageSize)->select();
+		echo db('inner_mail')->getLastSql();
 		//echo db('inner_mail')->getLastSql();
 		
 		foreach ($list as $key => $value) {
@@ -103,6 +125,7 @@ class Innermail extends Common
     public function backGetInnerMailList(){
         $where = [];
         $where['mail_status'] = 0;
+        $where['type'] = 0;
         //获取角色能够收到的所有信息
         $count = db('inner_mail')->field('id,theme,target_user,mail_content,send_time')->where($where)->count();
         $pageSize = 10;
@@ -110,8 +133,8 @@ class Innermail extends Common
         $page = ceil(input('post.page',1));
         $page = $page<=0?1:$page;
         //print_r($totalpages);
-        $data['page'] = ['totalpages'=>$totalpages,'page'=>$page,'count'=>$count];
-        $list = db('inner_mail')->field('id,theme,target_user,mail_content,send_time')->where($where)->page($page,$pageSize)->select();
+        $data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
+        $list = db('inner_mail')->field('id,theme,target_user,mail_content,send_time')->where($where)->page($page,$pageSize)->order('id','desc')->select();
         $data['list'] = $list;
         sendJson(1,'后台站内信列表',$data);
     }

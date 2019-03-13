@@ -25,12 +25,16 @@ Route::rule('/user/details','index/User/details');
 Route::rule('/download/users','index/User/downExcel','GET');
 // 获取用户评论
 Route::rule('/user/comments','index/User/getUserComment','GET');
+// 删除文章评论
+Route::rule('/user/comments/del','index/Article/delComment','GET');
 // 文章点赞
 Route::rule('/user/article/fabulous','index/User/getUserFabulous','GET');
 // 用户文章收藏
 Route::rule('/user/article/collection','index/User/getUserCollection','GET');
 // 机构规则说明
-Route::rule('/clinic/rules','index/Clinic/getRule');
+Route::rule('/clinic/rules','index/Clinic/getRule','GET');
+// 已关停机构申请开启
+Route::rule('/clinic/apply/reopen','index/Clinic/reOpenClinic','POST');
 // 添加机构规则
 Route::rule('/clinic/rule/add','index/Clinic/addRule','POST');
 // 修改规则状态
@@ -57,6 +61,8 @@ Route::rule('/user/order/consult','index/Order/userConsultOrder','GET');
 Route::rule('/clinic/account/add','index/Clinic/createAccount','POST');
 // 机构动态
 Route::rule('/clinic/details/trends','index/Clinic/clinicTrends','GET');
+// 机构订单动态
+Route::rule('/clinic/details/orders','index/Clinic/trendsOrders','GET');
 // 老师统计
 Route::rule('/teacher/count','index/Teacher/teacherCount','GET');
 // 所有老师
@@ -71,8 +77,12 @@ Route::rule('/teacher/visitors','index/Teacher/visitors','GET');
 Route::rule('/download/teachers','index/Teacher/download','GET');
 // 老师审核
 Route::rule('/teacher/examine','index/Teacher/examine','POST');
+// 老师专业信息修改审核
+Route::rule('/teacher/majorinfo/examine','index/Teacher/teacherEditInfoExamine','POST');
 // 老师被评价
 Route::rule('/teacher/details/evaluate','index/Teacher/evaluate','GET');
+// 老师动态（订单）
+Route::rule('/teacher/details/orders','index/Teacher/trendsOrders','GET');
 // 老师合作记录
 Route::rule('/teacher/details/relevant','index/Teacher/relevantRecord','GET');
 // 标签

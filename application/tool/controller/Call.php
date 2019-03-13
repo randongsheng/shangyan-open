@@ -7,13 +7,16 @@ class Call extends Controller
 {
 	public $base_array;
 	public function _initialize(){
-		$this->url = 'http://sandbox.teleii.com/';
+//		$this->url = 'http://sandbox.teleii.com/';
+		$this->url = 'http://api.teleii.com/';
 		$timestamp = time()."000";
 		$this->base_array = array(
 			//商户号
-			'id' =>'565',
+//			'id' =>'565',
+			'id' =>'625',
 			//商户key
-			'spKey'=>'SI8BRODA0QY9AUX3IFZ6XGE0',
+//			'spKey'=>'SI8BRODA0QY9AUX3IFZ6XGE0',
+			'spKey'=>'P5L4BA6LSDVZ895CVBNCW3LM',
 			//毫秒级时间戳
 			'timestamp'=>$timestamp,
 			
@@ -61,4 +64,20 @@ class Call extends Controller
 		return $result;
 		//print_r($result);
 	}
+    /**
+     * 下载录音
+     *    'getFileUrl' => 'http://222.73.159.12/media/readMediaFile.do',
+     */
+    public function getFile(){
+        $getFileUrl = 'http://222.73.159.12/media/readMediaFile.do';
+        $data = [
+            'id'=>$this->base_array['id'],
+            'timestamp'=>$this->base_array['timestamp'],
+            'mid'=>'300209524',
+            'tag'=>'20190222'
+        ];
+        $curlparams = curlparams($data);
+        $result=postUrlForCalling($getFileUrl, $curlparams);
+        print_r($result);
+    }
 }

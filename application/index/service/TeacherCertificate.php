@@ -27,7 +27,7 @@ class TeacherCertificate extends Model
      */
     public function getTitle($teacherId)
     {
-        return TeacherCertificate::where('uid',$teacherId)->column('certificate_name');
+        return TeacherCertificate::where('teacher_id',$teacherId)->column('certificate_name');
     }
 
     /**

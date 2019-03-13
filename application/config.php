@@ -240,5 +240,5 @@ return [
         'var_page'  => 'page',
         'list_rows' => 15,
     ],
-    'pro_img' => 'http://oss.sc-cg.cn/',
+    'pro_img' => 'http://oss.shangyanxinli.com/',
 ];

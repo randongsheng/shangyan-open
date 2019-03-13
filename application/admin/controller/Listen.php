@@ -15,33 +15,40 @@ class Listen extends Common
     		//订单id
     		# code...
     		$where['orderid'] = $data['orderid'];
-    	}elseif (isset($data['createtime'])&&!empty($data['createtime'])) {
+    	}
+    	if (isset($data['createtime'])&&!empty($data['createtime'])) {
     		//下单时间
     		# code...
     		$stime = strtotime($data['createtime']);
     		$etime = $stime+86399;
     		$where['createtime'] = ['between',[$stime,$etime]];
-    	}elseif (isset($data['status'])&&!empty($data['status'])) {
+    	}
+    	if ((isset($data['status'])&&!empty($data['status'])) || ($data['status'] === "0")) {
     		//订单状态
     		# code...
     		$where['o.status'] = $data['status'];
-    	}elseif (isset($data['nickname'])&&!empty($data['nickname'])) {
+    	}
+    	if (isset($data['nickname'])&&!empty($data['nickname'])) {
     		//用户昵称
     		# code...
+            $_where = [];
     		$nickname = $data['nickname'];
     		$_where['nickname'] = ['like',['%'.$nickname,$nickname.'%','%'.$nickname.'%'],'OR'];
     		$uids = db('user')->where($_where)->column('id');
     		// print_r($uids);
     		// die;
     		$where['o.uid'] = ['in',$uids];
-    	}elseif (isset($data['teachername'])&&!empty($data['teachername'])) {
+    	}
+    	if (isset($data['teachername'])&&!empty($data['teachername'])) {
     		//倾听师姓名
     		# code...
+            $_where = [];
     		$teachername = $data['teachername'];
     		$_where['realname'] = ['like',['%'.$teachername,$teachername.'%','%'.$teachername.'%'],'OR'];
     		$uids = db('userfield')->where($_where)->column('uid');
     		$where['serverpersonid'] = ['in',$uids];
-    	}elseif (isset($data['clinic_name'])&&!empty($data['clinic_name'])) {
+    	}
+    	if (isset($data['clinic_name'])&&!empty($data['clinic_name'])) {
     		//机构名称
     		# code...
     		$clinic_name = $data['clinic_name'];
@@ -55,8 +62,8 @@ class Listen extends Common
     	$page = ceil(input('post.page/d',1));
     	$page = $page<=0?1:$page;
     	//print_r($totalpages);
-    	$data['page'] = ['totalpages'=>$totalpages,'page'=>$page,'count'=>$count];
-    	$list = db('order o')->field('type,orderid,o.createtime,nickname,realname,clinic_name,o.topic,ordermoney,sytime,alltime,o.status')->join('user u','u.id=o.uid')->join('userfield f','f.uid=o.serverpersonid')->join('clinic c','c.id=o.clinicid')->page($page,$pageSize)->where($where)->select();
+    	$data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
+    	$list = db('order o')->field('type,orderid,o.createtime,nickname,realname,clinic_name,o.topic,ordermoney,sytime,alltime,o.status')->join('user u','u.id=o.uid')->join('userfield f','f.uid=o.serverpersonid')->join('clinic c','c.id=o.clinicid')->page($page,$pageSize)->where($where)->order('o.id','desc')->select();
     	foreach ($list as $k => $v) {
     		$list[$k]['rest'] = $this->checkOrder($v['orderid']);
     		$topic = trim($v['topic'],',');
@@ -147,7 +154,10 @@ class Listen extends Common
         {
             sendJson(-1,'orderid不能为空');
         }
-		$order = db('order')->field('status,orderid,ordermoney,topic,clinicid,paymode,uid,content,serverpersonid,alltime,sytime,createtime,paytime,completion_time,total_money')->where(['orderid'=>$orderid])->find();
+		$order = db('order')->field('status,orderid,ordermoney,topic,clinicid,paymode,uid,content,serverpersonid,alltime,sytime,createtime,paytime,completion_time,total_money,outtime,outtimeprice')->where(['orderid'=>$orderid])->find();
+        if (!$order){
+            sendJson(-1,'订单未找到');
+        }
 		$order['topic'] = $this->getTopicStr($order['topic']);
 		$user = new UserModel();
 		$visitor = $user->field('avatarurl,nickname,id,uname,gender,mobile,level')->where(['id'=>$order['uid']])->find();

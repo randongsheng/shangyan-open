@@ -18,11 +18,11 @@ class Article extends Base
 		$articleWhere = [];
 		$post = $request->only(['teacher_id','order_id','label_id','update_time','title','author_name','clinic_name']);
 		if(!empty($post['teacher_id'])){
-
+			
 		}
 
 		if(!empty($post['order_id'])){
-
+			
 		}
 
 		if(!empty($post['label_id'])){
@@ -105,5 +105,19 @@ class Article extends Base
 		$article = new ArticleModel;
 		$articles = $artcile->field(['*','null article_sort'])->select();
 		return json($articles);
+	}
+
+	/**
+	 * 删除文章评论
+	 */
+	public function delComment()
+	{
+		$commentId = input('param.comment_id');
+		$result = Db::name('comment')->where('id',$commentId)->delete();
+		if($result){
+			return json(['success'=>true,'code'=>'000','message'=>'已删除']);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'删除出错，请稍后再试！']);
+		}
 	}
 }

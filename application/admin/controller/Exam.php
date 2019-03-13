@@ -14,80 +14,81 @@ class Exam extends Common
     }
     //测试业务订单
     public function ExamOrder(){
-    	$data = input('post.');
-    	$where = [];
-    	if (isset($data['orderid'])&&!empty($data['orderid'])) {
-    		//订单id
-    		# code...
-    		$where['orderid'] = $data['orderid'];
-    	}elseif (isset($data['createtime'])&&!empty($data['createtime'])) {
-    		//下单时间
-    		# code...
-    		$stime = strtotime($data['createtime']);
-    		$etime = $stime+86399;
-    		$where['createtime'] = ['between',[$stime,$etime]];
-    	}elseif (isset($data['status'])&&!empty($data['status'])) {
-    		//订单状态
-    		# code...
-    		$where['o.status'] = $data['status'];
-    	}elseif (isset($data['titleid'])&&!empty($data['titleid'])) {
-    		//测试id
-    		# code...
-    		$where['titleid'] = $data['titleid'];
-    	}elseif (isset($data['title'])&&!empty($data['title'])) {
-    		//测试标题
-    		# code...
-    		$title = $data['title'];
-    		$_where['title'] = ['like',['%'.$title,$title.'%','%'.$title.'%'],'OR'];
-    		$titleids = db('examtitle')->where($_where)->column('id');
-    		// echo db('examtitle')->getLastSql();
-    		// print_r($titleids);
-    		$where['titleid'] = ['in',$titleids];
-    	}elseif (isset($data['nickname'])&&!empty($data['nickname'])) {
-    		//用户昵称
-    		# code...
-    		$nickname = $data['nickname'];
-    		$_where['nickname'] = ['like',['%'.$nickname,$nickname.'%','%'.$nickname.'%'],'OR'];
-    		$uids = db('user')->where($_where)->column('id');
-    		$where['uid'] = ['in',$uids];
-    	}elseif (isset($data['biaoti'])&&!empty($data['biaoti'])) {
-    		//标题
-    		# code...
-    		$biaoti = $data['biaoti'];
-    		$where['biaoti'] = ['like',['%'.$biaoti,$biaoti.'%','%'.$biaoti.'%'],'OR'];
-    	}
-    	//分页操作
-    	$count = db('examorder o')->field('orderid,createtime,nickname,titleid,title,biaoti,t.money money,o.status')->join('examtitle t','t.id=o.titleid')->join('user u','u.id=o.uid')->where($where)->count();
-    	//print_r($count);
-    	$pageSize = 10;
-    	$totalpages = ceil($count/$pageSize);
-    	$page = ceil(input('post.page/d',1));
-    	// print_r($page);
-    	// die;
-    	$page = $page<=0?1:$page;
-    	$limit = ($page-1)*$pageSize.','.$page*$pageSize;
-    	//print_r($limit);
-    	$data['page'] = ['totalpages'=>$totalpages,'page'=>$page,'count'=>$count];
-    	$list = db('examorder o')->field('orderid,createtime,nickname,titleid,title,biaoti,t.money money,o.status')->join('examtitle t','t.id=o.titleid')->join('user u','u.id=o.uid')->where($where)->limit($limit)->select();
-    	$data['list'] = $list;
-    	// print_r($list);
-    	sendJson(1,'测试订单列表',$data);
+        $data = input('post.');
+        $where = [];
+        if (isset($data['orderid'])&&!empty($data['orderid'])) {
+            //订单id
+            # code...
+            $where['orderid'] = $data['orderid'];
+        }elseif (isset($data['createtime'])&&!empty($data['createtime'])) {
+            //下单时间
+            # code...
+            $stime = strtotime($data['createtime']);
+            $etime = $stime+86399;
+            $where['createtime'] = ['between',[$stime,$etime]];
+        }elseif ((isset($data['status'])&&!empty($data['status'])) || ($data['status'] === "0")) {
+            //订单状态
+            # code...
+            $where['o.status'] = $data['status'];
+        }elseif (isset($data['titleid'])&&!empty($data['titleid'])) {
+            //测试id
+            # code...
+            $where['titleid'] = $data['titleid'];
+        }elseif (isset($data['title'])&&!empty($data['title'])) {
+            //测试标题
+            # code...
+            $title = $data['title'];
+            $_where['title'] = ['like',['%'.$title,$title.'%','%'.$title.'%'],'OR'];
+            $titleids = db('examtitle')->where($_where)->column('id');
+            // echo db('examtitle')->getLastSql();
+            // print_r($titleids);
+            $where['titleid'] = ['in',$titleids];
+        }elseif (isset($data['nickname'])&&!empty($data['nickname'])) {
+            //用户昵称
+            # code...
+            $nickname = $data['nickname'];
+            $_where['nickname'] = ['like',['%'.$nickname,$nickname.'%','%'.$nickname.'%'],'OR'];
+            $uids = db('user')->where($_where)->column('id');
+            $where['uid'] = ['in',$uids];
+        }elseif (isset($data['biaoti'])&&!empty($data['biaoti'])) {
+            //标题
+            # code...
+            $biaoti = $data['biaoti'];
+            $where['biaoti'] = ['like',['%'.$biaoti,$biaoti.'%','%'.$biaoti.'%'],'OR'];
+        }
+        //分页操作
+        $count = db('examorder o')->field('orderid,createtime,nickname,titleid,title,biaoti,t.money money,o.status')->join('examtitle t','t.id=o.titleid')->join('user u','u.id=o.uid')->where($where)->count();
+        //print_r($count);
+        $pageSize = 10;
+        $totalpages = ceil($count/$pageSize);
+        $page = ceil(input('post.page/d',1));
+        // print_r($page);
+        // die;
+        $page = $page<=0?1:$page;
+        $limit = ($page-1)*$pageSize.','.$page*$pageSize;
+        //print_r($limit);
+        $data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
+        $list = db('examorder o')->field('orderid,createtime,nickname,titleid,title,biaoti,t.money money,o.status')->join('examtitle t','t.id=o.titleid')->join('user u','u.id=o.uid')->where($where)->limit($limit)->order('o.id','desc')->select();
+        $data['list'] = $list;
+        // print_r($list);
+        sendJson(1,'测试订单列表',$data);
     }
     //测试题目列表
     public function examTitle(){
     	$data = input('post.');
     	$where = [];
-    	if (isset($data['id'])) {
+    	if (!empty($data['id'])) {
     		# code...
     		$where['id'] = $data['id'];
-    	}elseif (isset($data['title'])) {
+    	}elseif (!empty($data['title'])) {
     		# code...
     		$title = $data['title'];
     		$where['title'] = ['like',['%'.$title,$title.'%','%'.$title.'%'],'OR'];
-    	}elseif (isset($data['status'])) {
+    	}elseif (!empty($data['status'])) {
     		# code...
     		$where['status']=$data['status'];
     	}
+//    	print_r($where);
     	$count = db('examtitle')->field('id,title,description,topic,money,status')->where($where)->count();
     	//接受页数
     	$pageSize = 10;
@@ -95,7 +96,7 @@ class Exam extends Common
     	$page = ceil(input('post.page/d',1));
     	$page = $page<=0?1:$page;
     	//print_r($totalpages);
-    	$data['page'] = ['totalpages'=>$totalpages,'page'=>$page,'count'=>$count];
+    	$data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
     	$list = db('examtitle')->field('id,title,description,topic,money,status')->where($where)->page($page,$pageSize)->select();
     	foreach ($list as $key => $value) {
     		# code...
@@ -125,6 +126,9 @@ class Exam extends Common
 	// content 介绍
 	public function addtitle(){
 		$data = input('post.');
+        $know = preg_replace("/[\r\n]+/", "<br>", $data['know']);
+        $data['know'] = $know;
+//        print_r($txt);
         $titleid = input('post.titleid');
         unset($data['titleid']);
         $validate = new \app\admin\validate\Examvalidate;
@@ -176,10 +180,15 @@ class Exam extends Common
 	//is_end 是否为最后的问题
 	public function addQuestion(){
 		$data = input('post.');
+        $answer = input('post.json/a');
+        $this->is_end($data,$answer);
         $validate = new \app\admin\validate\Examvalidate;
         $checkData = $validate->scene('addquestion')->check($data);
         if (!$checkData){
             sendJson(-1,$validate->getError()) ;
+        }
+        if (!$answer){
+            sendJson(-1,'选项必须填写');
         }
         unset($data['json']);
         //查询问题是否存在
@@ -194,7 +203,7 @@ class Exam extends Common
             $id = $question['id'];
         }
 		
-        $answer = input('post.json');
+
         $res = $this->addAnswer($answer,$id);
 		if($res){
 			sendJson(1,'添加成功',$id);
@@ -202,6 +211,23 @@ class Exam extends Common
 			sendJson(-1,'添加失败');
 		}
 	}
+    /**
+     * 如果作为结束题,答案中就不允许录入jumpid
+     */
+    public function is_end($data,$answer)
+    {
+        if ($data['is_end'] == 1)
+        {
+//            $answer = json_decode($answer[0],true);
+            foreach ($answer as $datum)
+            {
+                if ($datum['jumpid'])
+                {
+                    sendJson(-1,'作为结束题,选项中不允许有跳转');
+                }
+            }
+        }
+    }
 	//添加答案
 	//questionid 问题的id(不是number)
 	//option 选项 A,B,C
@@ -209,13 +235,15 @@ class Exam extends Common
 	//score 分数
 	//jumpid 跳转到哪道题(这里是number)
 	public function addAnswer($json,$id){
-        $answer = json_decode($json,true);
-        foreach ($answer as $key => $value) {
-            $answer[$key]['questionid']=$id;
+//        $answer = json_decode($json[0],true);
+//        print_r($answer);
+        foreach ($json as $key => $value) {
+            $json[$key]['questionid']=$id;
+
         }
         //删除所有questionid 的答案
         db('examanswer')->where(['questionid'=>$id])->delete();
-        $res = db('examanswer')->insertAll($answer);
+        $res = db('examanswer')->insertAll($json);
         if ($res) {
             return true;
         }else{
@@ -227,7 +255,7 @@ class Exam extends Common
         $titleid = input('post.titleid');
         $question = db('examquestion')->where(['titleid'=>$titleid])->select();
         foreach ($question as $key => $value) {
-            $value['answer'] = db('examanswer')->where(['questionid'=>$value['id']])->select();
+            $value['json'] = db('examanswer')->field('questionid,option,content,score,jumpid,answerpicurl')->where(['questionid'=>$value['id']])->order('option','asc')->select();
             $data[]=$value;
         }
         sendJson(1,'获取试卷问题',$data);
@@ -237,8 +265,9 @@ class Exam extends Common
         $titleid = input('post.titleid');
         $end = db('examend')->where(['titleid'=>$titleid])->group('weidu')->column('weidu');
         $examend = [];
-        foreach ($end as $a) {
-            $examend[] = db('examend')->where(['weidu'=>$a,'titleid'=>$titleid])->select();
+        foreach ($end as $key=>$a) {
+            $examend[$key]['weidu'] = $a;
+            $examend[$key]['list'] = db('examend')->field('titleid,name,min,max,content')->where(['weidu'=>$a,'titleid'=>$titleid])->select();
         }
         sendJson(1,'获取测试结果参考',$examend);
     }
@@ -262,12 +291,15 @@ class Exam extends Common
 	// }
     //添加结果
     public function addEnd(){
-        $json = input('post.json');
+        $json = input('post.json/a');
         $titleid = input('post.titleid');
-        $arr = json_decode($json,true);
+//        $arr = json_decode($json,true);
         $data = [];
-        foreach ($arr as $key => $value) {
+        foreach ($json as $key => $value) {
             $weidu = $value['weidu'];
+            if ($weidu==""){
+                continue;
+            }
             foreach ($value['list'] as $k => $v) {
                 $v['weidu'] = $weidu;
                 $v['titleid'] = $titleid;
@@ -302,7 +334,7 @@ class Exam extends Common
 		$question = $examquestion->where(['titleid'=>$titleid])->select();
 		$examanswer = new ExamanswerModel();
 		foreach ($question as $key => $value) {
-			$value['answer'] = $examanswer->where(['questionid'=>$value['id']])->select();
+			$value['answer'] = $examanswer->where(['questionid'=>$value['id']])->order('option asc')->select();
 			$data[]=$value;
 		}
 		$info['test'] = $data;
@@ -341,7 +373,7 @@ class Exam extends Common
 	//测试题上架
     public function upExam(){
         $id = input('post.id');
-        \db('examtitle')->where(['id'=>$id])->update(['status'=>1]);
+
         //是否有题目
         $question = \db('examquestion')->where(['titleid'=>$id])->find();
         if (!$question){
@@ -358,6 +390,7 @@ class Exam extends Common
         {
             sendJson(-1,'测试题没有完结题目');
         }
+        \db('examtitle')->where(['id'=>$id])->update(['status'=>1]);
         sendJson(1,'测试上架');
     }
     //测试题下架
