@@ -489,6 +489,15 @@ class Teacher extends Base
 					$teacherData->clinic_id,
 					5
 				);
+				if(!empty($teacherData->uid)){
+					$innermail->addInnerMail(
+						$teacherData->teacher_name.'老师的资料审核未通过！',
+						1,
+						$teacherData->teacher_name.'老师的申请未能通过审核，原因如下：'.$reason,
+						$teacherData->uid,
+						5
+					);
+				}
 				break;
 			
 			case 1:
@@ -502,6 +511,16 @@ class Teacher extends Base
 					$teacherData->clinic_id,
 					5
 				);
+
+				if(!empty($teacherData->uid)){
+					$innermail->addInnerMail(
+						$teacherData->teacher_name.'老师已通过审核！',
+						1,
+						'恭喜您，'.$teacherData->teacher_name.'老师资料已审核通过，即日起便可以在尚言心理平台接单了！',
+						$teacherData->uid,
+						5
+					);
+				}
 				break;
 
 			case 2:
@@ -516,6 +535,15 @@ class Teacher extends Base
 					$teacherData->clinic_id,
 					5
 				);
+				if(!empty($teacherData->uid)){
+					$innermail->addInnerMail(
+						$teacherData->teacher_name.'老师已通过审核！',
+						1,
+						'恭喜您，'.$teacherData->teacher_name.'老师资料已审核通过，即日起便可以在尚言心理平台接单了！',
+						$teacherData->uid,
+						5
+					);
+				}
 				break;
 
 			default:
@@ -632,7 +660,7 @@ class Teacher extends Base
 				if(!empty($teacherData->uid)){
 					$innermail->addInnerMail(
 						$teacherData->teacher_name.'老师的资料审核未通过！',
-						2,
+						1,
 						$teacherData->teacher_name.'老师的申请未能通过审核，原因如下：'.$reason,
 						$teacherData->uid,
 						5
@@ -642,7 +670,7 @@ class Teacher extends Base
 			}else{
 				$editlog->rollBack();
 				$teacher->rollBack();
-				return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后重试！1']);
+				return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后重试！']);
 			}
 		}else if($action==1){
 			$result = $editlog->adopt($teacherId);
@@ -657,7 +685,7 @@ class Teacher extends Base
 				if(!empty($teacherData->uid)){
 					$innermail->addInnerMail(
 						$teacherData->teacher_name.'老师修改信息已通过审核！',
-						2,
+						1,
 						$teacherData->teacher_name.'老师修改的资料已审核通过并生效了！',
 						$teacherData->uid,
 						5
@@ -665,7 +693,7 @@ class Teacher extends Base
 				}
 				return json(['success'=>true,'code'=>'000','message'=>'操作成功！']);
 			}else{
-				return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后重试！1']);
+				return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后重试！']);
 			}
 		}else{
 			return json(['success'=>false,'code'=>'012','message'=>'没有预定义的参数！']);
@@ -1139,7 +1167,7 @@ class Teacher extends Base
 	public function uploadImgs()
 	{
 		$name = input('post.name');
-		$clinicId = Session::get('admin_id');
+		$adminId = Session::get('admin_id');
 		$redis = new Redis;
 		$response = [];
 	    // 图片对应地址
@@ -1157,9 +1185,9 @@ class Teacher extends Base
 		// 随机字符串返回
 		$str = generate_rand(15,true);
 		// 文件地址存储到redis
-		$redis->set2('teacher_info_'.$clinicId.'_'.$str,$filename['filename']);
+		$redis->set2('teacher_info_'.$adminId.'_'.$str,$filename['filename']);
 		// 设置有效时间2小时
-		$redis->expireAt('teacher_info_'.$clinicId.'_'.$str,time()+60*60+2);
+		$redis->expireAt('teacher_info_'.$adminId.'_'.$str,time()+60*60+2);
 		return json(['success'=>true,'code'=>'000','message'=>'上传完成','data'=>['filename'=>$filename['filename'],'no'=>$str]]);
 	}
 
@@ -1169,7 +1197,7 @@ class Teacher extends Base
 	public function editImg()
 	{
 		$name = input('post.name');
-		$clinicId = config('test_id');
+		$adminId = Session::get('admin_id');
 		$redis = new Redis;
 		$response = [];
 		// 前端拼接地址
@@ -1189,9 +1217,9 @@ class Teacher extends Base
 		// 随机字符串返回
 		$str = generate_rand(15,true);
 		// 文件地址存储到redis
-		$redis->set2('teacher_editinfo_'.$clinicId.'_'.$str,$filename['filename']);
+		$redis->set2('teacher_editinfo_'.$adminId.'_'.$str,$filename['filename']);
 		// 设置有效时间2小时
-		$redis->expireAt('teacher_editinfo_'.$clinicId.'_'.$str,time()+60*60+2);
+		$redis->expireAt('teacher_editinfo_'.$adminId.'_'.$str,time()+60*60+2);
 		return json(['success'=>true,'code'=>'000','message'=>'上传完成','data'=>['filename'=>$filename['filename'],'no'=>$str]]);
 	}
 }

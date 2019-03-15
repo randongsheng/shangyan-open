@@ -26,6 +26,23 @@ class Teacher extends Model
     protected $table = 'sy_teacher';
 
     /**
+     * 创建数据
+     */
+    public function createTeacher($insertData)
+    {
+        $nowTime = time();
+        foreach ($insertData as $k => $v) {
+            $this->$k = $v;
+        }
+        $this->create_at = $nowTime;
+        if($this->save()){
+            return $this->teacher_id;
+        }else{
+            return false;
+        }
+    }
+
+    /**
      * 修改老师审核状态
      */
     public function editData($teacherId,$editData)

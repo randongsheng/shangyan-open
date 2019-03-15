@@ -34,7 +34,15 @@ return [
 		// 机构其他附加信息的图片
 		'clinic_related'=>'clinic/related/',
 		// 机构保证金支付二维码
-		'clinic_qecode'=>'clinic/bond_qrcode/',
+		'clinic_qrcode'=>'clinic/bond_qrcode/',
+		// 老师证书
+		'teacher_certificate'=>'clinic/teacher/certificate/',
+		// 老师学历
+		'teacher_education'=>'clinic/teacher/education/',
+		// 老师培训经历
+		'teacher_train'=>'clinic/teacher/train/',
+		// 老师上身照
+		'teacher_body'=>'clinic/teacher/body/',
 	],
 	/*'IMGPRESENT'=>[
 		'clinic_logo'=>'clinic/logo/',
@@ -48,5 +56,5 @@ return [
 	'deoisit'=>1000,
 
 	// 保证金白名单
-	'white_list'=>[],
+	'white_list'=>[37,],
 ];

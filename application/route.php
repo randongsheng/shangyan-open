@@ -135,6 +135,19 @@ Route::rule('/teacher/blacklist/del','index/Teacher/blacklistClean','POST');
 Route::rule('/user/blacklist/add','index/User/blacklistAction','POST');
 // 用户撤出黑名单
 Route::rule('/user/blacklist/del','index/User/blacklistClean','POST');
+// 上传图片
+Route::rule('/teacher/upload','index/Teacher/uploadImgs');
+// 修改老师图片
+Route::rule('/teacher/upload/edit','index/Teacher/editImg');
+// 添加老师第一步
+Route::rule('/teacher/add/one','index/Teacher/addTeacher');
+// 添加老师第二步
+Route::rule('/teacher/add/two','index/Teacher/teacherRole');
+// 添加老师第三步
+Route::rule('/teacher/add/three','index/Teacher/personalProfile');
+// 添加老师第四步
+Route::rule('/teacher/add/four','index/Teacher/insertTeacher');
+
 return [
     '__pattern__' => [
         'name' => '\w+',
