@@ -899,7 +899,7 @@ class Clinic extends Base
 		];
 		$result = $clinic->createData($createData);
 		if($result){
-			return json(['success'=>true,'code'=>'000','message'=>'添加完成']);
+			return json(['success'=>true,'code'=>'000','message'=>'添加完成','clinic_id'=>$result]);
 		}else{
 			return json(['success'=>false,'code'=>'006','message'=>'修改出错，请稍后重试！']);
 		}
@@ -911,7 +911,7 @@ class Clinic extends Base
 	public function uploadImgs()
 	{
 		$name = input('post.name');
-		$clinicId = config('test_id');
+		$clinicId = Session::get('admin_id');
 		$path = date('Ymd').'/';
 		$redis = new Redis;
 		$response = [];
@@ -1026,6 +1026,188 @@ class Clinic extends Base
 				return json(['success'=>false,'code'=>'006','messaeg'=>'操作出错，请稍后再试！']);
 			}
 		}
+	}
+
+	/**
+	 * 录入机构信息
+	 */
+	public function clinicInfoInsert()
+	{
+		$request = Request::instance();
+		$redis = new Redis;
+		$name = [
+			// 基本信息 1个人/2企业
+			'clinic_name','logo_no','business_license_no','found_time','nature','introduce',
+			// 运营人信息
+			'operator_name','operator_identity_A_no','operator_identity_B_no','operator_ycode','operator_tel',
+			// 法人信息
+			'liable_name','liable_identity_A_no','liable_identity_B_no','liable_tel','liable_ycode',
+			// 场地信息
+			'address','full_address','latitude','longitude','scene_photo_no','related','city','clinic_id'
+		];
+		// BIG BUG 、、、
+		@$params = $request->param()['clinic'];
+		$fileParam = [
+			'logo'=>'logo_no',
+			'business_license'=>'business_license_no',
+			'operator_identity'=>['operator_identity_A_no','operator_identity_B_no'],
+			'liable_identity'=>['liable_identity_A_no','liable_identity_B_no'],
+			'scene_photo'=>'scene_photo_no'
+		];
+		$fieldText = [
+			'logo'=>'logo',
+			'business_license'=>'营业执照',
+			'operator_identity'=>'运营人身份证图片信息',
+			'liable_identity'=>'法人（负责人）身份证图片信息',
+			'scene_photo'=>'场地图片信息'
+		];
+		$post = [];
+        foreach ($name as $key) {
+            if (isset($params[$key])) {
+                $post[$key] = $params[$key];
+            }
+        }
+		$clinic = new ClinicModel;
+		$clinicAdd = new ClinicRelated;
+		$nowTime = time();
 		
+		$adminId = Session::get('admin_id');
+		$infoType = input('post.model');
+		$response = [];
+		$response['path'] = config('IMGPRESENT');
+		$imgKey = 'clinic_info_'.$adminId.'_';
+		$vali = $this->validate($post, 'ClinicValidate.clinic_info_all');
+		if( $vali !== true){ // 返回错误的验证结果
+			return json(['success'=>false,'code'=>'002','message'=>$vali]);
+		}
+		$clinicId = $post['clinic_id'];
+		$queryData = $clinic->get($clinicId);
+		$insertData = [];
+		if(($queryData->getData('status')==0&&$queryData['apply_schedule']==1) || ($queryData->getData('status')==-1&&$queryData['apply_schedule']==1)){
+			foreach ($fileParam as $key => $value) {
+				if(is_array($value)){
+					$fieldData = explode(',',$queryData->getData($key));
+					if(@$redis->get2($imgKey.$post[$value[0]])) {
+						$fieldData[0] = $redis->get2($imgKey.$post[$value[0]]);
+					}
+					if(@$redis->get2($imgKey.$post[$value[1]])) {
+						$fieldData[1] = $redis->get2($imgKey.$post[$value[1]]);
+					}
+					$fieldData = implode(',', $fieldData);
+					$insertData[$key] = $fieldData;
+				}else{
+					$fieldData = '';
+					if ($key == 'scene_photo') {
+						if(empty($post[$value])){
+							continue;
+						}
+						$scenefield = explode(',',$queryData->getData($key));
+						// 目前是三个
+						for ($i=0; $i < 3; $i++) {
+							if(isset($post[$value][$i])){
+								$scenefield[$i] = $redis->get2($imgKey.$post[$value][$i]);
+							}
+						}
+						$insertData[$key] = implode(',', $scenefield);
+					}
+					if(@$redis->get2($imgKey.$post[$value])) {
+						$fieldData = $redis->get2($imgKey.$post[$value]);
+						$insertData[$key] = $fieldData;
+					}
+				}
+			}
+		}else{
+			foreach ($fileParam as $key => $value) {
+				if(is_array($value)){
+					$fieldData = explode(',',$queryData->getData($key));
+					if(!isset($value[0]) || !isset($value[1])){
+						return json(['success'=>false,'code'=>'002','message'=>'1请上传'.$fieldText[$key].'图片']);
+					}
+					if(!$redis->get2($imgKey.$post[$value[0]]) || !$redis->get2($imgKey.$post[$value[1]])){
+						return json(['success'=>false,'code'=>'002','message'=>'您上传的'.$fieldText[$key].'已过期']);
+					}
+					$fieldData[0] = $redis->get2($imgKey.$post[$value[0]]);
+					$fieldData[1] = $redis->get2($imgKey.$post[$value[1]]);
+					$insertData[$key] = implode(',', $fieldData);
+				}else{
+					if(empty($post[$value])){
+						return json(['success'=>false,'code'=>'002','message'=>'1请上传'.$fieldText[$key].'图片']);
+					}
+					if ($key == 'scene_photo') {
+						$scenefield = explode(',',$queryData->getData($key));
+						// 目前是三个
+						for ($i=0; $i < 3; $i++) {
+							if(isset($post[$value][$i])){
+								if(!$redis->get2($imgKey.$post[$value][$i])){
+									return json(['success'=>false,'code'=>'002','message'=>'您上传的'.$fieldText[$key].'已过期']);
+								}
+								$scenefield[$i] = $redis->get2($imgKey.$post[$value][$i]);
+							}
+						}
+						$insertData[$key] = implode(',', $scenefield);
+						continue;
+					}
+					if(!$redis->get2($imgKey.$post[$value])) {
+						return json(['success'=>false,'code'=>'002','message'=>'您上传的'.$fieldText[$key].'已过期']);
+					}
+					$insertData[$key] = $redis->get2($imgKey.$post[$value]);
+				}
+			}
+		}
+		$insertData['clinic_name'] = trim($post['clinic_name']);
+		$insertData['found_time'] = trim($post['found_time']);
+		$insertData['introduce'] = trim($post['introduce']);
+		$insertData['operator_name'] = trim($post['operator_name']);
+		$insertData['operator_tel'] = trim($post['operator_tel']);
+		$insertData['liable_name'] = trim($post['liable_name']);
+		$insertData['liable_tel'] = trim($post['liable_tel']);
+		$insertData['address'] = trim($post['address']);
+		$insertData['full_address'] = trim($post['full_address']);
+		$insertData['city'] = trim($post['city']);
+		$insertData['latitude'] = trim($post['latitude']);
+		$insertData['longitude'] = trim($post['longitude']);
+		$insertData['nature'] = trim($post['nature']);
+		$insertData['apply_schedule'] = 3;
+		$insertData['status'] = 2;
+		$insertData['run_status'] = 0;
+		if(!empty($post['related'])){
+			// 附加信息
+			$relatedData = [];
+			foreach ($post['related'] as $value) {
+				$k = [];
+				$relatedVali = $this->validate($value, 'ClinicValidate.related');
+				if( $relatedVali !== true){ // 返回错误的验证结果
+					return json(['success'=>false,'code'=>'002','message'=>$relatedVali]);
+				}
+				if(!empty($value['related_id'])){
+					$k['related_id'] = trim($value['related_id']);
+					if(!empty($value['related_photo_no'])){
+						$k['related_photo'] = $redis->get2($imgKey.$value['related_photo_no']);
+					}
+				}else{
+					$k['related_photo'] = $redis->get2($imgKey.$value['related_photo_no']);
+					$k['clinic_id'] = $clinicId;
+				}
+				$k['related_name'] = trim($value['related_name']);
+				$k['related_desc'] = trim($value['related_desc']);
+				$k['related_link'] = trim($value['related_link']);
+				$k['create_at'] = $nowTime;
+				$relatedData[] = $k;
+			}
+			$resultRelated = $clinicAdd->saveAll($relatedData);
+			if(!$resultRelated){
+				return json(['success'=>false,'code'=>'000','message'=>'信息保存出错，请稍后重试']);
+			}
+		}
+		// 写入数据
+		$result = $clinic->editData($clinicId,$insertData);
+		if($result){
+			$response['success'] = true;
+			$response['code'] = '000';
+			$response['message'] = '保存成功！';
+			return json($response);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'数据保存出错，请稍后重试！']);
+		}
 	}
 }	

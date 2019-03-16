@@ -59,6 +59,10 @@ Route::rule('/user/order/listen','index/Order/userListenOrder','GET');
 Route::rule('/user/order/consult','index/Order/userConsultOrder','GET');
 // 添加机构账号
 Route::rule('/clinic/account/add','index/Clinic/createAccount','POST');
+// 填写机构信息
+Route::rule('/clinic/account/info','index/Clinic/clinicInfoInsert','POST');
+// 机构上传图片
+Route::rule('/clinic/upload','index/Clinic/uploadImgs','POST');
 // 机构动态
 Route::rule('/clinic/details/trends','index/Clinic/clinicTrends','GET');
 // 机构订单动态
