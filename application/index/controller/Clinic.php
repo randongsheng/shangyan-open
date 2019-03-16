@@ -1121,7 +1121,7 @@ class Clinic extends Base
 				if(is_array($value)){
 					$fieldData = explode(',',$queryData->getData($key));
 					if(!isset($value[0]) || !isset($value[1])){
-						return json(['success'=>false,'code'=>'002','message'=>'1请上传'.$fieldText[$key].'图片']);
+						return json(['success'=>false,'code'=>'002','message'=>'请上传'.$fieldText[$key].'图片']);
 					}
 					if(!$redis->get2($imgKey.$post[$value[0]]) || !$redis->get2($imgKey.$post[$value[1]])){
 						return json(['success'=>false,'code'=>'002','message'=>'您上传的'.$fieldText[$key].'已过期']);
@@ -1131,7 +1131,7 @@ class Clinic extends Base
 					$insertData[$key] = implode(',', $fieldData);
 				}else{
 					if(empty($post[$value])){
-						return json(['success'=>false,'code'=>'002','message'=>'1请上传'.$fieldText[$key].'图片']);
+						return json(['success'=>false,'code'=>'002','message'=>'请上传'.$fieldText[$key].'图片']);
 					}
 					if ($key == 'scene_photo') {
 						$scenefield = explode(',',$queryData->getData($key));
