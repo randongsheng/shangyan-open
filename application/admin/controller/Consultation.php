@@ -67,6 +67,7 @@ class Consultation extends Common
         // die;
         foreach ($list as $k => $v) {
             $list[$k]['rest'] = $this->checkOrder($v['orderid']);
+            $list[$k]['createtime'] = date('Y-m-d H:i:s',$v['createtime']);
             // 查询总预约次数
             $list[$k]['alltimes'] = db('ordermore')->where(['orderid'=>$v['orderid']])->count();
             // 查询已经使用的次数
