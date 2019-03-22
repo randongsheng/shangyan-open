@@ -1210,4 +1210,242 @@ class Clinic extends Base
 			return json(['success'=>false,'code'=>'006','message'=>'数据保存出错，请稍后重试！']);
 		}
 	}
+
+	/**
+	 * 填写入驻信息
+	 *
+	 * @param model/[clinic(机构基本)][operator(运营人员信息)][liable(法人信息)][scene(场地信息)][related(其他信息)]
+	 *
+	 * @return String
+	 */
+	public function applyInfo()
+	{
+		$request = Request::instance();
+		$clinicId = input('param.clinic_id');
+		$adminId = Session::get('admin_id');
+		$redis = new Redis;
+		$clinic = new ClinicModel;
+		$infoType = input('post.model');
+		$response = [];
+		$response['path'] = config('IMGPRESENT');
+		$clinicData = $clinic->where('id',$clinicId)->field('password',true)->find();
+		if(!$clinicData){
+			return json(['success'=>false,'code'=>'007','message'=>'没有查询到您的机构']);
+		}
+		$editImg = 'clinic_info_'.$adminId.'_';
+		switch ($infoType) {
+			// 诊所基本资料
+			case 'clinic':
+				$post = $request->only([
+					'clinic_name','logo_no','business_license_no','found_time'
+				]);
+
+				// 验证参数是否符合规则
+				$vali = $this->validate($post, 'ClinicValidate.clinic');
+				if( $vali !== true){ // 返回错误的验证结果
+					return json(['success'=>false,'code'=>'002','message'=>$vali]);
+				}
+				$insertData = [];
+				$path = date('Ymd').'/';
+				if(!empty($post['logo_no'])){
+					if(!$redis->get2($editImg.$post['logo_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'logo图片已过期，请重新上传']);
+					}
+					$insertData['logo'] = $redis->get2($editImg.$post['logo_no']);
+				}
+				if(!empty($post['business_license_no'])){
+					if(!$redis->get2($editImg.$post['business_license_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'营业执照图片已过期，请重新上传']);
+					}
+					$insertData['business_license'] = $redis->get2($editImg.$post['business_license_no']);
+				}
+				
+				$insertData['clinic_name'] = trim($post['clinic_name']);
+				$insertData['found_time'] = trim($post['found_time']);
+				break;
+			// 运营人员信息
+			case 'operator':
+				$post = $request->only([
+					'operator_name','operator_identity_A_no','operator_identity_B_no',
+					'operator_ycode','operator_tel'
+				]);
+				// 验证参数是否符合规则
+				$vali = $this->validate($post, 'ClinicValidate.operator');
+				if( $vali !== true ){ // 返回错误的验证结果
+					return json(['success'=>false,'code'=>'002','message'=>$vali]);
+				}
+
+				if($clinicData->operator_tel!=$post['operator_tel']){
+					$tools = new Tools;
+					$checkTime = $tools->checkTime($post['operator_tel']);
+					if ($checkTime) {
+						//没过期,检验验证码
+						$check = Db::name('smscode')->where(['mobile'=>$post['operator_tel'],'code'=>$post['operator_ycode']])->find();
+						if (!$check){
+							return json(['success'=>false,'code'=>'009','message'=>'验证码不正确']);
+						}
+					}else{
+						return json(['success'=>false,'code'=>'009','message'=>'验证码已过期，请重新获取']);
+					}
+				}
+
+				$insertData = [];
+				
+				$identityArr = explode(',',$clinicData->operator_identity);
+				if(!empty($post['operator_identity_A_no'])){
+					if(!$redis->get2($editImg.$post['operator_identity_A_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'身份证正面图片已过期，请重新上传']);
+					}
+					$insertData['operator_identity'] = $redis->get2($editImg.$post['operator_identity_A_no']).','.$identityArr[1];
+					$identityArr[0] = $redis->get2($editImg.$post['operator_identity_A_no']);
+				}
+				if(!empty($post['operator_identity_B_no'])){
+					if(!$redis->get2($editImg.$post['operator_identity_B_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'身份证反面图片已过期，请重新上传']);
+					}
+					$insertData['operator_identity'] = $identityArr[0].','.$redis->get2($editImg.$post['operator_identity_B_no']);
+				}
+				$insertData['operator_name'] = trim($post['operator_name']);
+				$insertData['operator_tel'] = $post['operator_tel'];
+				break;
+
+			case 'liable':// 法人信息
+				$post = $request->only([
+					'liable_name','liable_identity_A_no','liable_identity_B_no',
+			        'liable_tel','liable_ycode'
+				]);
+				// 验证参数是否符合规则
+				$vali = $this->validate($post, 'ClinicValidate.liable');
+				if( $vali !== true ){ // 返回错误的验证结果
+					return json(['success'=>false,'code'=>'002','message'=>$vali]);
+				}
+
+				if($clinicData->liable_tel!=$post['liable_tel']){
+					$tools = new Tools;
+					$checkTime = $tools->checkTime($post['liable_tel']);
+					if ($checkTime) {
+						//没过期,检验验证码
+						$check = Db::name('smscode')->where(['mobile'=>$post['liable_tel'],'code'=>$post['liable_ycode']])->find();
+						if (!$check){
+							return json(['success'=>false,'code'=>'009','message'=>'验证码不正确']);
+						}
+					}else{
+						return json(['success'=>false,'code'=>'009','message'=>'验证码已过期，请重新获取']);
+					}
+				}
+
+				$insertData = [];
+
+				$identityArr = explode(',',$clinicData->liable_identity);
+
+				if(!empty($post['liable_identity_A_no'])){
+					if(!$redis->get2($editImg.$post['liable_identity_A_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'身份证正面图片已过期，请重新上传']);
+					}
+					$insertData['liable_identity'] = $redis->get2($editImg.$post['liable_identity_A_no']).','.$identityArr[1];
+					$identityArr[0] = $redis->get2($editImg.$post['liable_identity_A_no']);
+				}
+
+				if(!empty($post['liable_identity_B_no'])){
+					if(!$redis->get2($editImg.$post['liable_identity_A_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'身份证反面图片已过期，请重新上传']);
+					}
+					$insertData['liable_identity'] = $identityArr[0].','.$redis->get2($editImg.$post['liable_identity_B_no']);
+					$identityArr[1] = $redis->get2($editImg.$post['liable_identity_B_no']);
+				}
+				
+				$insertData['liable_name'] = trim($post['liable_name']);
+				$insertData['liable_tel'] = trim($post['liable_tel']);
+
+				break;
+
+			case 'scene':// 场地信息
+				$post = $request->only([
+					'address','latitude','longitude','scene_photo_no','full_address','city'
+				]);
+				// 验证参数是否符合规则
+				$vali = $this->validate($post, 'ClinicValidate.scene');
+				if( $vali !== true ){ // 返回错误的验证结果
+					return json(['success'=>false,'code'=>'002','message'=>$vali]);
+				}
+				$path = date('Ymd').'/';
+				$filenames = '';
+				$yScene = explode(',',$clinicData->getData('scene_photo'));
+				for ($i=0; $i < count($post['scene_photo_no']); $i++) { 
+					if(!empty($post['scene_photo_no'][$i])){
+						if(!$redis->get2($editImg.$post['scene_photo_no'][$i])){
+							return json(['success'=>false,'code'=>'002','message'=>'场地图片已过期，请重新上传']);
+						}
+						$yScene[$i] = $redis->get2($editImg.$post['scene_photo_no'][$i]);
+					}
+				}
+				$filenames = implode(',', $yScene);
+				$insertData = [
+					'address' => trim($post['address']),
+					'full_address' => trim($post['full_address']),
+					'city' => trim($post['city']),
+					'latitude' => trim($post['latitude']),
+					'longitude' => trim($post['longitude']),
+					'scene_photo' => $filenames,
+				];
+				break;
+
+			case 'related':// 其他信息添加或修改
+				@$relateds = $request->param()['related'];
+				$relatedData = [];
+				$clinicAdd = new ClinicRelated;
+				foreach ($relateds as $value) {
+					$relatedVali = $this->validate($value, 'ClinicValidate.related');
+					if( $relatedVali !== true){ // 返回错误的验证结果
+						return json(['success'=>false,'code'=>'002','message'=>$relatedVali]);
+					}
+					$editData = [];
+					if(!empty($value['related_id'])){
+						$editData['related_id'] = $value['related_id'];
+						if(!empty($value['related_photo_no'])){
+							if(!$redis->get2($editImg.$value['related_photo_no'])){
+								return json(['success'=>false,'code'=>'002','message'=>'资料图片已过期，请重新上传']);
+							}
+							$editData['related_photo'] = $redis->get2($editImg.$value['related_photo_no']);
+						}
+						if($clinicId!=$clinicAdd->where('related_id',$value['related_id'])->value('clinic_id')){
+							return json(['success'=>false,'code'=>'007','message'=>'不可修改改信息！']);
+						}
+					}else{
+						if(empty($value['related_photo_no'])){
+							return json(['success'=>false,'code'=>'002','message'=>'资料图片不能为空']);
+						}
+						$editData['related_photo'] = $redis->get2($editImg.$value['related_photo_no']);
+					}
+					$editData['clinic_id'] = $clinicId;
+					$editData['related_name'] = trim($value['related_name']);
+					$editData['related_desc'] = trim($value['related_desc']);
+					$editData['related_link'] = trim($value['related_link']);
+					$relatedData[] = $editData;
+				}
+				
+				$resultRelated = $clinicAdd->saveAll($relatedData);
+				if($resultRelated){
+					return json([
+						'success'=>true,
+						'code'=>'000',
+						'message'=>'保存成功'
+					]);
+				}else{
+					return json(['success'=>false,'code'=>"006",'message'=>'抱歉，保存失败请稍后重试！']);
+				}
+			default:
+				return json(['success'=>false,'code'=>'007','message'=>'没有该模块的存储位置']);
+		}
+		// 写入数据
+		$result = $clinic->editData($clinicId,$insertData);
+		if($result){
+			$response['success'] = true;
+			$response['code'] = '000';
+			$response['message'] = '保存成功！';
+			return json($response);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'数据保存出错，请稍后重试！']);
+		}
+	}
 }	

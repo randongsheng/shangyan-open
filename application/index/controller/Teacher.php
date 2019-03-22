@@ -880,7 +880,7 @@ class Teacher extends Base
 			'listen_duration','growth_duration',
 			'certificate','train','supervise','education',
 			'team_consult_duration','team_consult_number',
-			'team_growth_duration',
+			'team_growth_duration','clinic_id',
 		]);
 		// 验证参数是否符合规则
 		$vali = $this->validate($post, 'TeacherValidate.major');
@@ -917,6 +917,7 @@ class Teacher extends Base
 			'team_consult_number'=>@$post['team_consult_number'],
 			'team_consult_duration'=>@$post['team_consult_duration'],
 			'team_growth_duration'=>@$post['team_growth_duration'],
+			'clinic_id'=>@$post['clinic_id'],
 			'growth_at'=>@$nowTime,
 			'info_status'=>1,
 			'status'=>0,

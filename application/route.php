@@ -61,6 +61,8 @@ Route::rule('/user/order/consult','index/Order/userConsultOrder','GET');
 Route::rule('/clinic/account/add','index/Clinic/createAccount','POST');
 // 填写机构信息
 Route::rule('/clinic/account/info','index/Clinic/clinicInfoInsert','POST');
+// 修改机构信息
+Route::rule('/clinic/account/editinfo','index/Clinic/applyInfo','POST');
 // 机构上传图片
 Route::rule('/clinic/upload','index/Clinic/uploadImgs','POST');
 // 机构动态
@@ -144,13 +146,13 @@ Route::rule('/teacher/upload','index/Teacher/uploadImgs');
 // 修改老师图片
 Route::rule('/teacher/upload/edit','index/Teacher/editImg');
 // 添加老师第一步
-Route::rule('/teacher/add/one','index/Teacher/addTeacher');
+Route::rule('/teacher/add/one','index/Teacher/addTeacher','POST');
 // 添加老师第二步
-Route::rule('/teacher/add/two','index/Teacher/teacherRole');
+Route::rule('/teacher/add/two','index/Teacher/teacherRole','POST');
 // 添加老师第三步
-Route::rule('/teacher/add/three','index/Teacher/personalProfile');
+Route::rule('/teacher/add/three','index/Teacher/personalProfile','POST');
 // 添加老师第四步
-Route::rule('/teacher/add/four','index/Teacher/insertTeacher');
+Route::rule('/teacher/add/four','index/Teacher/insertTeacher','POST');
 
 return [
     '__pattern__' => [

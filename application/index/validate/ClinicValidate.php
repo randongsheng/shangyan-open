@@ -106,6 +106,12 @@ class ClinicValidate extends Validate
         'shelf'=>['clinic_id','type'],
         // 账号
         'account'=>['number_email','password','repassword'],
+        // 
+        'regster'  =>  ['number_email','password','repassword',/*'ycode'*/],
+        'clinic' =>  ['clinic_name','found_time'],
+        'operator' =>  ['operator_name','operator_tel'],
+        'liable' =>  ['liable_name','liable_tel'],
+        'scene' =>  ['address','full_address','city',],
     ];
 
     protected function checkFileStr($value,$rule,$data)
