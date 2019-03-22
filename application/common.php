@@ -242,3 +242,34 @@ function objToArray($obj)
 {
     return json_decode(json_encode($obj), true);
 }
+//秒数转变成分钟:秒
+function secondToStr($times){
+    $result = '0';
+    if ($times>0) {
+        $minute = floor($times/60);
+        if ($times%60 == 0)
+        {
+            return $minute;
+        }
+        $second = ceil(($times - 60 * ($minute-1)) % 60);
+        if ($second < 10)
+        {
+            $second = str_pad($second,2,"0" ,STR_PAD_LEFT);
+        }
+        $result = $minute.':'.$second;
+    }else{
+        $times = abs($times);
+        $minute = floor($times/60);
+        if ($times%60 == 0)
+        {
+            return '-'.$minute;
+        }
+        $second = ceil(($times - 60 * ($minute-1)) % 60);
+        if ($second < 10)
+        {
+            $second = str_pad($second,2,"0" ,STR_PAD_LEFT);
+        }
+        $result = '-'.$minute.':'.$second;
+    }
+    return $result;
+}
