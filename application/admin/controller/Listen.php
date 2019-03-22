@@ -66,9 +66,9 @@ class Listen extends Common
     	$list = db('order o')->field('type,orderid,o.createtime,nickname,realname,clinic_name,o.topic,ordermoney,sytime,alltime,o.status')->join('user u','u.id=o.uid')->join('userfield f','f.uid=o.serverpersonid')->join('clinic c','c.id=o.clinicid')->page($page,$pageSize)->where($where)->order('o.id','desc')->select();
     	foreach ($list as $k => $v) {
     		$list[$k]['rest'] = $this->checkOrder($v['orderid']);
-    		$list[$k]['createtime'] = date('Y-m-d H:i:s',$v['createtime']);
-    		$list[$k]['alltime'] = secondToStr($v['alltime']);
-    		$list[$k]['sytime'] = secondToStr($v['sytime']);
+            $list[$k]['createtime'] = date('Y-m-d H:i:s',$v['createtime']);
+            $list[$k]['alltime'] = secondToStr($v['alltime']);
+            $list[$k]['sytime'] = secondToStr($v['sytime']);
     		$topic = trim($v['topic'],',');
 	        if (is_numeric($topic)) {
 	            $list[$k]['topic'] = db('topic')->where(['id'=>$topic])->value('title');
