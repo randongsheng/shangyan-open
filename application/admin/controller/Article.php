@@ -14,32 +14,38 @@ class Article extends Common
     		//文章id
     		# code...
     		$where['id'] = $data['id'];
-    	}elseif (isset($data['update_at'])&&!empty($data['update_at'])) {
+    	}
+    	if (isset($data['update_at'])&&!empty($data['update_at'])) {
     		//更新时间
     		# code...
     		$stime = strtotime($data['update_at']);
     		$etime = $stime+86399;
     		$where['update_at'] = ['between',[$stime,$etime]];
-    	}elseif (isset($data['status'])&&!empty($data['status'])) {
+    	}
+    	if (isset($data['status'])&&!empty($data['status'])) {
     		//订单状态
     		# code...
     		$where['status'] = $data['status'];
-    	}elseif (isset($data['author_name'])&&!empty($data['author_name'])) {
+    	}
+    	if (isset($data['author_name'])&&!empty($data['author_name'])) {
     		//作者姓名
     		# code...
     		$author = $data['author_name'];
     		$where['author_name'] = ['like',['%'.$author,$author.'%','%'.$author.'%'],'OR'];;
-    	}elseif (isset($data['title'])&&!empty($data['title'])) {
+    	}
+    	if (isset($data['title'])&&!empty($data['title'])) {
     		//文章标题
     		# code...
     		$title = $data['title'];
     		$where['title'] = ['like',['%'.$title,$title.'%','%'.$title.'%'],'OR'];
-    	}elseif (isset($data['clinic_name'])&&!empty($data['clinic_name'])) {
+    	}
+    	if (isset($data['clinic_name'])&&!empty($data['clinic_name'])) {
     		//机构名称
     		# code...
     		$clinic_name = $data['clinic_name'];
     		$where['clinic_name'] = ['like',['%'.$clinic_name,$clinic_name.'%','%'.$clinic_name.'%'],'OR'];
-    	}elseif (isset($data['keywords'])&&!empty($data['keywords'])) {
+    	}
+    	if (isset($data['keywords'])&&!empty($data['keywords'])) {
     		# code...
     		# 标签查询
     		$keywords = $data['keywords'];
