@@ -1,5 +1,6 @@
 <?php
 namespace app\admin\controller;
+use app\admin\model\OrderModel;
 use think\Controller;
 use think\Db;
 class Businessaccount extends Common
@@ -186,13 +187,16 @@ class Businessaccount extends Common
 			sendJson(-1,'时间与商户id必须填写');
 		}
 //		print_r($where);
-		$count = db('order')->field('orderid,completion_time,type,ordermoney,service_charge,refund_amount,real_income')->where($where)->count();
+        $order = new OrderModel();
+//		$count = db('order')->field('orderid,completion_time,type,ordermoney,service_charge,refund_amount,real_income')->where($where)->count();
+		$count = $order->field('orderid,completion_time,type,ordermoney,service_charge,refund_amount,real_income')->where($where)->count();
 		//总页数
     	$pageSize = 10;
     	$totalpages = ceil($count/$pageSize);
     	$page = ceil(input('post.page/d',1));
     	$page = $page<=0?1:$page;
-		$order = db('order')->field('orderid,completion_time,paytime,type,ordermoney,service_charge,refund_amount,real_income,status')->where($where)->page($page,$pageSize)->select();
+//		$order = db('order')->field('orderid,completion_time,paytime,type,ordermoney,service_charge,refund_amount,real_income,status')->where($where)->page($page,$pageSize)->select();
+		$order = $order->field('orderid,completion_time,paytime,type,ordermoney,service_charge,refund_amount,real_income,status')->where($where)->page($page,$pageSize)->select();
 
 		//总应得
 		$t_real_income = 0;
