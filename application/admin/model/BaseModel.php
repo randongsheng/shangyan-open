@@ -71,11 +71,13 @@ class BaseModel extends Model
     public function getCompletionTimeAttr($value)
     {
 //        $value = '';
-        return date('Y-m-d H:i:s',$value);
+        $data = $value?date('Y-m-d H:i:s',$value):0;
+        return $data;
     }
     public function getPaytimeAttr($value)
     {
 //        $value = '';
-        return date('Y-m-d H:i:s',$value);
+        $data = $value?date('Y-m-d H:i:s',$value):0;
+        return $data;
     }
 }
