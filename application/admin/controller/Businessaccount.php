@@ -192,7 +192,6 @@ class Businessaccount extends Common
     	$totalpages = ceil($count/$pageSize);
     	$page = ceil(input('post.page/d',1));
     	$page = $page<=0?1:$page;
-    	print_r($where);
 		$order = db('order')->field('orderid,completion_time,paytime,type,ordermoney,service_charge,refund_amount,real_income,status')->where($where)->page($page,$pageSize)->select();
 
 		//总应得
