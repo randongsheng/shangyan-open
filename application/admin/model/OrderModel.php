@@ -16,14 +16,14 @@ class OrderModel extends BaseModel
 {
    // 确定链接表名
     protected $name = 'order';
-    public function getCompletionTimeAttr($value)
-    {
-//        $value = '';
-        return date('Y-m-d H:i:s',$value);
-    }
-    public function getPaytimeAttr($value)
-    {
-//        $value = '';
-        return date('Y-m-d H:i:s',$value);
-    }
+//    public function getCompletionTimeAttr($value)
+//    {
+////        $value = '';
+//        return date('Y-m-d H:i:s',$value);
+//    }
+//    public function getPaytimeAttr($value)
+//    {
+////        $value = '';
+//        return date('Y-m-d H:i:s',$value);
+//    }
 }

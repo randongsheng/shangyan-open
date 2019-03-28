@@ -68,4 +68,14 @@ class BaseModel extends Model
         }
         return config('pro_img').$value;//config('save_protocol').config('save_url').$path['clinic_logo'].ltrim($value,'/');
     }
+    public function getCompletionTimeAttr($value)
+    {
+//        $value = '';
+        return date('Y-m-d H:i:s',$value);
+    }
+    public function getPaytimeAttr($value)
+    {
+//        $value = '';
+        return date('Y-m-d H:i:s',$value);
+    }
 }
