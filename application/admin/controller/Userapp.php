@@ -228,7 +228,7 @@ class Userapp extends Common
    	}
    	//获取推荐老师
    	public function getPushTeacher(){
-   		$list = Db::name('user u')->field('id,realname,gender,sort,last_login_time')->join('userfield f','u.id=f.uid')->where(['push'=>1])->order('sort desc')->select();
+   		$list = Db::name('user u')->field('id,realname,gender,sort,push_date')->join('userfield f','u.id=f.uid')->where(['push'=>1])->order('sort desc')->select();
    		sendJson(1,'老师列表',$list);
    	}
    	//获取推荐测试
@@ -302,7 +302,7 @@ class Userapp extends Common
    				Db::name('clinic')->where(['id'=>$id])->update(['sort'=>$sort,'push'=>1]);
    				break;
    			case 'teacher':
-   				Db::name('user')->where(['id'=>$id])->update(['sort'=>$sort,'push'=>1]);
+   				Db::name('user')->where(['id'=>$id])->update(['sort'=>$sort,'push'=>1,'push_date'=>date("Y-m-d H:i:s")]);
    				break;
    			case 'exam':
    				Db::name('examtitle')->where(['id'=>$id])->update(['sort'=>$sort,'update_at'=>time(),'push'=>1]);
