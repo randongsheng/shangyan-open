@@ -71,7 +71,7 @@ class Callback extends Controller
 		//file_put_contents('/home/wwwroot/application/tool/controller/log1.txt','回调成功',FILE_APPEND);
 
 		$json = file_get_contents("php://input") ;//{"CallbackCommand":"State.StateChange","Info":{"To_Account":"1","Action":"Login","Reason":"Register"}}
-		file_put_contents('/home/wwwroot/application/tool/controller/log.txt',$json,FILE_APPEND);
+
 		$data = json_decode($json,true);
 		$CallbackCommand = $data['CallbackCommand'];
 		switch ($CallbackCommand)
