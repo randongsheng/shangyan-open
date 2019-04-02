@@ -65,7 +65,7 @@ function authCheck($rule)
         return true;
     }
 
-    if(in_array($rule, session('rule'))){
+    if(in_array($rule, (array)session('rule'))){
         return true;
     }
 
