@@ -76,7 +76,7 @@ class Order extends Base
 		}
 		// 查找标签ID（表结构被迫）
 		if(!empty($post['label_id'])){
-			$orderWhere['testm.topic'] = ['like','%,'.trim($post['label_id']).',%'];
+			$orderWhere['o.topic'] = ['like','%,'.trim($post['label_id']).',%'];
 		}
 
 		if(!empty($post['user_id'])){
@@ -119,7 +119,7 @@ class Order extends Base
 		}
 		// 查找标签ID（表结构被迫）
 		if(!empty($post['label_id'])){
-			$orderWhere['testm.topic'] = ['like','%,'.trim($post['label_id']).',%'];
+			$orderWhere['o.topic'] = ['like','%,'.trim($post['label_id']).',%'];
 		}
 		
 		if(!empty($post['user_id'])){
