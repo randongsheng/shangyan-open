@@ -117,9 +117,7 @@ class Label extends Base
 	public function relevance()
 	{
 		$request = Request::instance();
-		$post = [];
-		$post['master_id'] = input('param.master_id');
-		$post['obey_id'] = $request->post('obey_id');
+		$post = $request->only(['obey_id','master_id']);
 		if(empty($post['master_id'])){
 			return json(['success'=>false,'code'=>'002','message'=>'标签ID不能为空']);
 		}
