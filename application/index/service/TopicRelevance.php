@@ -32,12 +32,10 @@ class TopicRelevance extends Model
             return $this->where(['master_id'=>$masterId])->delete();
         }
     	if(is_array($obeyId)){
+            $this->where(['master_id'=>$masterId])->delete();
     		$labels = [];
     		for ($i=0; $i < count($obeyId); $i++) { 
                 $label = [];
-    			if($this->where(['master_id'=>$masterId,'obey_id'=>$obeyId[$i]])->value('master_id')){
-    				$this->where(['master_id'=>$masterId,'obey_id'=>$obeyId[$i]])->delete();
-    			}
                 $label['master_id'] = $masterId;
                 $label['obey_id'] = $obeyId[$i];
     			$label['create_at'] = $nowTime;
