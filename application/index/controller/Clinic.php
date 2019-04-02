@@ -236,7 +236,7 @@ class Clinic extends Base
 					'o.content','o.orderid','om.starttime',
 					'om.endtime','o.alltime','o.sytime',
 					'om.number','o.type',$consoltSql.' as consult_con',
-					'uf.realname','u.avatarurl','uu.gender','uu.nickname','o.topic'
+					'uf.realname','u.avatarurl','uu.gender','uu.nickname','o.topic','om.stime','om.etime'
 				])
 				->order('o.createtime','desc')
 				->limit(10)
@@ -299,7 +299,7 @@ class Clinic extends Base
 				->join('sy_user u','u.id=o.serverpersonid','LEFT')
 				->join('sy_user uu','uu.id=o.uid','LEFT')
 				->where(['c.id'=>$clinicId,'o.type'=>2])
-				->field(['o.content','o.orderid','om.starttime','om.endtime','o.alltime','o.sytime','om.number','o.type',$consoltSql.' as consult_con','uf.realname','u.avatarurl','uu.gender','uu.nickname','o.topic'])
+				->field(['o.content','o.orderid','om.starttime','om.endtime','o.alltime','o.sytime','om.number','o.type',$consoltSql.' as consult_con','uf.realname','u.avatarurl','uu.gender','uu.nickname','o.topic','om.stime','om.etime'])
 				->order('o.createtime','desc')
 				->paginate(20);
 			    break;
