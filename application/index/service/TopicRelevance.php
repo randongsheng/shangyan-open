@@ -28,7 +28,7 @@ class TopicRelevance extends Model
     public function setRele($masterId,$obeyId)
     {
         $nowTime = time();
-        Topic::where(['id'=>$masterId])->save(['update_at'=>$nowTime]);
+        Topic::where(['id'=>$masterId])->update(['update_at'=>$nowTime]);
         if(empty($obeyId)){
             return $this->where(['master_id'=>$masterId])->delete();
         }
