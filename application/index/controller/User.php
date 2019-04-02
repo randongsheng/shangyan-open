@@ -105,6 +105,7 @@ class User extends Base
 			$post['regster_end_time'] = $yesterdayEnd;
 		}
 		$userWhere['role'] = 0;
+		$userWhere['app'] = 1;
 		// 测试订单统计
 		$examResultSql = Db::table('sy_examorder')
 		->alias('e')

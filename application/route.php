@@ -153,6 +153,18 @@ Route::rule('/teacher/add/two','index/Teacher/teacherRole','POST');
 Route::rule('/teacher/add/three','index/Teacher/personalProfile','POST');
 // 添加老师第四步
 Route::rule('/teacher/add/four','index/Teacher/insertTeacher','POST');
+// 专业信息修改
+Route::rule('/teacher/edit/duration','index/Teacher/durationInfo','POST');
+// 专业资质修改
+Route::rule('/teacher/edit/certificate','index/Teacher/teacherCertificate','POST');
+// 删除专业信息
+Route::rule('/teacher/delete/info','index/Teacher/delMajorInfo','POST');
+// 培训经历修改
+Route::rule('/teacher/edit/train','index/Teacher/teacherTrain','POST');
+// 督导经历修改
+Route::rule('/teacher/edit/supervise','index/Teacher/teacherSupervise','POST');
+// 受教经历修改
+Route::rule('/teacher/edit/education','index/Teacher/teacherEducation','POST');
 
 return [
     '__pattern__' => [

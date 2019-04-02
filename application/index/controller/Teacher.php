@@ -501,28 +501,6 @@ class Teacher extends Base
 				break;
 			
 			case 1:
-				$teacherData->info_status = 2;
-				$teacherData->adopt_at = $nowTime;
-				$relevant->addRelevant($releData);
-				$innermail->addInnerMail(
-					$teacherData->teacher_name.'老师已通过审核！',
-					3,
-					'恭喜您，'.$teacherData->teacher_name.'老师资料已审核通过，即日起便可以在尚言心理平台接单了！',
-					$teacherData->clinic_id,
-					5
-				);
-
-				if(!empty($teacherData->uid)){
-					$innermail->addInnerMail(
-						$teacherData->teacher_name.'老师已通过审核！',
-						1,
-						'恭喜您，'.$teacherData->teacher_name.'老师资料已审核通过，即日起便可以在尚言心理平台接单了！',
-						$teacherData->uid,
-						5
-					);
-				}
-				break;
-
 			case 2:
 				$teacherData->info_status = 2;
 				$teacherData->status = 1;
@@ -1222,5 +1200,321 @@ class Teacher extends Base
 		// 设置有效时间2小时
 		$redis->expireAt('teacher_editinfo_'.$adminId.'_'.$str,time()+60*60+2);
 		return json(['success'=>true,'code'=>'000','message'=>'上传完成','data'=>['filename'=>$filename['filename'],'no'=>$str]]);
+	}
+
+
+	/**
+	 * 专业信息
+	 */
+	public function durationInfo()
+	{
+		$request = Request::instance();
+		$post = $request->only([
+			'teacher_id','consult_number','consult_duration','listen_number',
+			'listen_duration','growth_duration','type','team_consult_number',
+			'team_consult_duration','team_growth_duration'
+		]);
+		$nowTime = time();
+		if(empty($post['type'])){
+			return json(['success'=>false,'code'=>'007','message'=>'type不能为空']);
+		}
+		if(!in_array($post['type'], ['consult','growth'])){
+			return json(['success'=>false,'code'=>'002','message'=>'该字段不在修改范围内！']);
+		}
+		
+		if($post['type']=='consult'){
+			// 验证参数是否符合规则
+			$vali = $this->validate($post, 'TeacherValidate.major_consult_eidt');
+			if( $vali !== true ){ // 返回错误的验证结果
+				return json(['success'=>false,'code'=>'002','message'=>$vali]);
+			}
+			$editData = [
+				'consult_number'=>$post['consult_number'],
+				'consult_duration'=>$post['consult_duration'],
+				'listen_number'=>$post['listen_number'],
+				'listen_duration'=>$post['listen_duration'],
+				'team_consult_number'=>$post['team_consult_number'],
+				'team_consult_duration'=>$post['team_consult_duration'],
+			];
+
+		}else if($post['type']=='growth'){
+			// 验证参数是否符合规则
+			$vali = $this->validate($post, 'TeacherValidate.major_growth_eidt');
+			if( $vali !== true ){ // 返回错误的验证结果
+				return json(['success'=>false,'code'=>'002','message'=>$vali]);
+			}
+			$editData = [
+				'team_growth_duration'=>$post['team_growth_duration'],
+				'growth_duration'=>$post['growth_duration'],
+				'growth_at'=>$nowTime,
+			];
+		}else{
+			return json(['success'=>false,'code'=>'007','message'=>'该字段不在修改范围内！']);
+		}
+		$teacher = new TeacherModel;
+		$result = $teacher->editData($post['teacher_id'],$editData);
+		if($result){
+			return json(['success'=>true,'code'=>'000','message'=>'添加成功']);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'保存出错，请稍后再试。']);
+		}
+	}
+
+	/**
+	 * 专业资质
+	 */
+	public function teacherCertificate()
+	{
+		$request = Request::instance();
+		@$post = $request->param()['certificate'];
+		$certificate = new TeacherCertificate;
+		$nowTime = time();
+		$redis = new Redis;
+		$teacher = new TeacherModel;
+		$adminId = Session::get('admin_id');
+		$imgPrefix = 'teacher_info_'.$adminId.'_';
+		$teacherId = input('param.teacher_id');
+		$certificateEditData = [];
+		if(empty($post)){
+			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
+		}
+		for ($i=0; $i < count($post); $i++) { 
+			$certificateData = [];
+			// 验证参数是否符合规则
+			$vali = $this->validate($post[$i], 'TeacherValidate.certificate_eidt');
+			if( $vali !== true ){ // 返回错误的验证结果
+				return json(['success'=>false,'code'=>'002','message'=>$vali]);
+			}
+
+			if(empty($post[$i]['certificate_id'])){
+				if(!$redis->get2($imgPrefix.$post[$i]['certificate_photo_no'])){
+					return json(['success'=>false,'code'=>'002','message'=>'资质证书图片已过期，请重新上传！']);
+				}
+				$certificateData['certificate_photo'] = $redis->get2($imgPrefix.$post[$i]['certificate_photo_no']);
+				$certificateData['create_at'] = $nowTime;
+				$certificateData['teacher_id'] = $post[$i]['teacher_id'];
+				$certificateData['uid'] = $teacher->where(['teacher_id'=>$post[$i]['teacher_id']])->value('uid');
+			}else{
+				if(!empty($post[$i]['certificate_photo_no'])){
+					if(!$redis->get2($imgPrefix.$post[$i]['certificate_photo_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'资质证书图片已过期，请重新上传！']);
+					}
+					$certificateData['certificate_photo'] = $redis->get2($imgPrefix.$post[$i]['certificate_photo_no']);
+				}
+				$certificateData['certificate_id'] = $post[$i]['certificate_id'];
+				$certificateData['update_at'] = $nowTime;
+			}
+			$certificateData['certificate_name'] = $post[$i]['certificate_name'];
+			$certificateData['certificate_no'] = $post[$i]['certificate_no'];
+			$certificateData['award_date'] = $post[$i]['award_date'];
+			$certificateEditData[] = $certificateData;
+			$teacherId = $post[$i]['teacher_id'];
+		}
+		$result = $certificate->saveAll($certificateEditData);
+		if($result){
+			return json(['success'=>true,'code'=>'000','message'=>'保存成功']);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'保存出错，请稍后再试。']);
+		}
+	}
+
+	/**
+	 * 删除专业信息
+	 */
+	public function delMajorInfo()
+	{
+		$request = Request::instance();
+		$post = $request->only(['info_id','type','teacher_id']);
+		$vali = $this->validate($post,'TeacherValidate.del_info');
+		if($vali!==true){
+			return json(['success'=>false,'code'=>'007','message'=>$vali]);
+		}
+		$certificate = new TeacherCertificate;
+		$train = new TeacherTrain;
+		$supervise = new TeacherSupervise;
+		$education = new TeacherEducation;
+		switch (strtolower($post['type'])) {
+			case 'certificate':
+				$result = $certificate->where(['certificate_id'=>['in',implode(',',$post['info_id'])],'teacher_id'=>$post['teacher_id']])->delete();
+				break;
+			case 'train':
+				$result = $train->where(['train_id'=>['in',implode(',',$post['info_id'])],'teacher_id'=>$post['teacher_id']])->delete();
+				break;
+			case 'supervise':
+				$result = $supervise->where(['supervise_id'=>['in',implode(',',$post['info_id'])],'teacher_id'=>$post['teacher_id']])->delete();
+				break;
+			case 'education':
+				$result = $education->where(['education_id'=>['in',implode(',',$post['info_id'])],'teacher_id'=>$post['teacher_id']])->delete();
+				break;
+			
+			default:
+				return json(['success'=>false,'code'=>'014','message'=>'没有预定义的参数！']);
+		}
+		if($result){
+			return json(['success'=>true,'code'=>'000','message'=>'删除成功']);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'该信息不存在或已经删除！']);
+		}
+	}
+
+	/**
+	 * 培训经历
+	 */
+	public function teacherTrain()
+	{
+		$request = Request::instance();
+		@$post = $request->param()['train'];
+		$train = new TeacherTrain;
+		$redis = new Redis;
+		$teacher = new TeacherModel;
+		$nowTime = time();
+		$adminId = Session::get('admin_id');
+		$imgPrefix = 'teacher_info_'.$adminId.'_';
+		$teacherId = input('param.teacher_id');
+		$trainEditData = [];
+		if(empty($post)){
+			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
+		}
+		for ($i=0; $i < count($post); $i++) {
+			$trainData = [];
+			// 验证参数是否符合规则
+			$vali = $this->validate($post[$i], 'TeacherValidate.train_edit');
+			if( $vali !== true ){ // 返回错误的验证结果
+				return json(['success'=>false,'code'=>'002','message'=>$vali]);
+			}
+			if(empty($post[$i]['train_id'])){
+				if(!$redis->get2($imgPrefix.$post[$i]['train_photo_no'])){
+					return json(['success'=>false,'code'=>'002','message'=>'培训证明图片已过期，请重新上传！']);
+				}
+				$trainData['train_photo'] = $redis->get2($imgPrefix.$post[$i]['train_photo_no']);
+				$trainData['teacher_id'] = $post[$i]['teacher_id'];
+				$trainData['uid'] = $teacher->where(['teacher_id'=>$post[$i]['teacher_id']])->value('uid');
+				$trainData['create_at'] = $nowTime;
+			}else{
+				if(!empty($post[$i]['train_photo_no'])){
+					if(!$redis->get2($imgPrefix.$post[$i]['train_photo_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'培训证明图片已过期，请重新上传！']);
+					}
+					$trainData['train_photo'] = $redis->get2($imgPrefix.$post[$i]['train_photo_no']);
+				}
+				$trainData['train_id'] = $post[$i]['train_id'];
+				$trainData['update_at'] = $nowTime;
+			}
+			$trainData['train_mechanism'] = $post[$i]['train_mechanism'];
+			$trainData['train_start_time'] = $post[$i]['train_start_time'];
+			$trainData['train_end_time'] = $post[$i]['train_end_time'];
+			$trainData['train_course'] = $post[$i]['train_course'];
+			$teacherId = $post[$i]['teacher_id'];
+			$trainEditData[] = $trainData;
+		}
+		$result = $train->saveAll($trainEditData);
+		if($result){
+			return json(['success'=>true,'code'=>'000','message'=>'添加操作提交成功，需等待审核通过']);  
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'保存出错，请稍后再试。']);
+		}
+	}
+
+	/**
+	 * 督导经历
+	 */
+	public function teacherSupervise()
+	{
+		$request = Request::instance();
+		@$post = $request->param()['supervise'];
+		$nowTime = time(); 
+		$supervise = new TeacherSupervise;
+		$teacher = new TeacherModel;
+		$superviseEditData = [];
+		$teacherId = input('param.teacher_id');
+		if(empty($post)){
+			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
+		}
+		for ($i=0; $i < count($post); $i++) { 
+			$superviseData = [];
+			// 验证参数是否符合规则
+			$vali = $this->validate($post[$i], 'TeacherValidate.supervise_edit');
+			if( $vali !== true ){ // 返回错误的验证结果
+				return json(['success'=>false,'code'=>'002','message'=>$vali]);
+			}
+			if(empty($post[$i]['supervise_id'])){
+				$superviseData['create_at'] = $nowTime;
+				$superviseData['teacher_id'] = $post[$i]['teacher_id'];
+				$superviseData['uid'] = $teacher->where(['teacher_id'=>$post[$i]['teacher_id']])->value('uid');
+			}else{
+				$superviseData['supervise_id'] = $post[$i]['supervise_id'];
+				$superviseData['update_at'] = $nowTime;
+			}
+			$superviseData['supervise_mode'] = $post[$i]['supervise_mode'];
+			$superviseData['supervise_name'] = $post[$i]['supervise_name'];
+			$superviseData['supervise_tel'] = @$post[$i]['supervise_tel'];
+			$superviseData['supervise_duration'] = $post[$i]['supervise_duration'];
+			$superviseEditData[] = $superviseData;
+			$teacherId = $post[$i]['teacher_id'];
+		}
+		$result = $supervise->saveAll($superviseEditData);
+		if($result){
+			return json(['success'=>true,'code'=>'000','message'=>'添加成功']);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'保存出错，请稍后再试。']);
+		}
+	}
+
+	/**
+	 * 受教经历 
+	 */
+	public function teacherEducation()
+	{
+		$request = Request::instance();
+		$education = new TeacherEducation;
+		$redis = new Redis;
+		$nowTime = time();
+		$adminId = Session::get('admin_id');
+		$imgPrefix = 'teacher_info_'.$adminId.'_';
+		@$post = $request->param()['education'];
+		$eduInsertData = [];
+		$teacherId = input('param.teacher_id');
+		if(empty($post)){
+			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
+		}
+		for ($i=0; $i < count($post); $i++) {
+			$editData = [];
+			// 验证参数是否符合规则
+			$vali = $this->validate($post[$i], 'TeacherValidate.education_edit');
+			if( $vali !== true ){ // 返回错误的验证结果
+				return json(['success'=>false,'code'=>'002','message'=>$vali]);
+			}
+			if(empty($post[$i]['education_id'])){
+				if(!$redis->get2($imgPrefix.$post[$i]['education_photo_no'])){
+					return json(['success'=>false,'code'=>'002','message'=>'学历证明图片已过期，请重新上传！']);
+				}
+				$editData['teacher_id'] = $post[$i]['teacher_id'];
+				$editData['education_photo'] = $redis->get2($imgPrefix.$post[$i]['education_photo_no']);
+				$editData['create_at'] = $nowTime;
+			}else{
+				if(!empty($post[$i]['education_photo_no'])){
+					if(!$redis->get2($imgPrefix.$post[$i]['education_photo_no'])){
+						return json(['success'=>false,'code'=>'002','message'=>'学历证明图片已过期，请重新上传！']);
+					}
+					$editData['education_photo'] = $redis->get2($imgPrefix.$post[$i]['education_photo_no']);
+				}
+				$editData['education_id'] = $post[$i]['education_id'];
+				$editData['update_at'] = $nowTime;
+			}
+			$editData['school'] = $post[$i]['school'];
+			$editData['start_time'] = $post[$i]['start_time'];
+			$editData['end_time'] = $post[$i]['end_time'];
+			$editData['major'] = $post[$i]['major'];
+			$editData['unified_if'] = $post[$i]['unified_if'];
+			$editData['education_level'] = $post[$i]['education_level'];
+			$teacherId = $post[$i]['teacher_id'];
+			$eduInsertData[] = $editData;
+		}
+		$result = $education->saveAll($eduInsertData);
+		if($result){
+			return json(['success'=>true,'code'=>'000','message'=>'添加成功']);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'保存出错，请稍后再试。']);
+		}
 	}
 }
