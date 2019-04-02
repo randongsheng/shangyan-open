@@ -56,7 +56,7 @@ class Order extends Model
      */
     public function getStatusAttr($value)
     {
-    	$statusDe = [0=>'待支付',1=>'已支付待使用',2=>'交易完成',3=>'关闭'];
+    	$statusDe = [0=>'待支付',1=>'订单未完成',2=>'交易完成',3=>'订单超时',4=>'待评价',5=>'超时补交'];
         if(!array_key_exists($value, $statusDe)){
             return '待支付';
         }
