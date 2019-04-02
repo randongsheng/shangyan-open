@@ -28,6 +28,7 @@ class TopicRelevance extends Model
     public function setRele($masterId,$obeyId)
     {
         $nowTime = time();
+        Topic::where(['id'=>$masterId])->save(['update_at'=>$nowTime]);
         if(empty($obeyId)){
             return $this->where(['master_id'=>$masterId])->delete();
         }
@@ -46,7 +47,6 @@ class TopicRelevance extends Model
     	if($this->where(['master_id'=>$masterId,'obey_id'=>$obeyId])->value('master_id')){
 			$this->where(['master_id'=>$masterId,'obey_id'=>$obeyId[$i]])->delete();
 		}
-        Topic::where(['id'=>$masterId])->save(['update_at'=>$nowTime]);
     	$this->master_id = $masterId;
     	$this->obey_id = $obeyId;
     	$this->create_at = $nowTime;
