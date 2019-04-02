@@ -70,7 +70,7 @@ class TeacherEditLog extends Model
                         'video_price'=>$info['video_price'],
                         'f2f_price'=>$info['f2f_price'],
                     ]);
-                    if(empty($teacherData->uid)){
+                    if(!empty($teacherData->uid)){
                         $userRes = $userfield->where(['uid'=>$teacherData->uid])->update([
                             'video_price'=>$info['video_price'],
                             'f2f_price'=>$info['f2f_price'],
