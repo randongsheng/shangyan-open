@@ -648,7 +648,7 @@ class Teacher extends Base
 			}else{
 				$editlog->rollBack();
 				$teacher->rollBack();
-				return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后重试！']);
+				return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后重试！1']);
 			}
 		}else if($action==1){
 			$result = $editlog->adopt($teacherId);
@@ -671,7 +671,7 @@ class Teacher extends Base
 				}
 				return json(['success'=>true,'code'=>'000','message'=>'操作成功！']);
 			}else{
-				return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后重试！']);
+				return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后重试！2']);
 			}
 		}else{
 			return json(['success'=>false,'code'=>'012','message'=>'没有预定义的参数！']);
