@@ -11,18 +11,20 @@ class Consultation extends Common
 		$data = input('post.');
 		$where = [];
     	$where['type'] = 2;
-    	$where['o.status'] = ['NEQ',3];
+//    	$where['o.status'] = ['NEQ',3];
     	if (isset($data['orderid'])&&!empty($data['orderid'])) {
     		//订单id
     		# code...
     		$where['orderid'] = $data['orderid'];
-    	}elseif (isset($data['createtime'])&&!empty($data['createtime'])) {
+    	}
+    	if (isset($data['createtime'])&&!empty($data['createtime'])) {
     		//下单时间
     		# code...
     		$stime = strtotime($data['createtime']);
     		$etime = $stime+86399;
     		$where['createtime'] = ['between',[$stime,$etime]];
-    	}elseif ((isset($data['status'])&&!empty($data['status'])) || ($data['status'] === "0")) {
+    	}
+    	if ((isset($data['status'])&&!empty($data['status'])) || ($data['status'] === "0")) {
     		//订单状态
     		# code...
     		$where['o.status'] = $data['status'];
@@ -62,16 +64,17 @@ class Consultation extends Common
     	$page = $page<=0?1:$page;
     	//print_r($totalpages);
     	$data['page'] = ['pagesize'=>$pageSize,'page'=>$page,'count'=>$count];
-    	$list = db('order o')->field('type,orderid,o.createtime,nickname,realname,clinic_name,o.topic,ordermoney,o.status')->join('user u','u.id=o.uid')->join('userfield f','f.uid=o.serverpersonid')->join('clinic c','c.id=o.clinicid')->page($page,$pageSize)->where($where)->order('o.id','desc')->select();
+    	$list = db('order o')->field('type,orderid,o.createtime,nickname,realname,clinic_name,o.topic,ordermoney,o.status,mode')->join('user u','u.id=o.uid')->join('userfield f','f.uid=o.serverpersonid')->join('clinic c','c.id=o.clinicid')->page($page,$pageSize)->where($where)->order('o.id','desc')->select();
 //    	 echo db('order o')->getLastSql();
     	// die;
     	foreach ($list as $k => $v) {
     		$list[$k]['rest'] = $this->checkOrder($v['orderid']);
+            $list[$k]['createtime'] = date('Y-m-d H:i:s',$v['createtime']);
     		// 查询总预约次数
     		$list[$k]['alltimes'] = db('ordermore')->where(['orderid'=>$v['orderid']])->count();
     		// 查询已经使用的次数
     		$list[$k]['usetimes'] = db('ordermore')->where(['orderid'=>$v['orderid'],'status'=>['NEQ',0]])->count();
-
+            $list[$k]['type'] = $v['mode'];
     		$topic = trim($v['topic'],',');
 	        if (is_numeric($topic)) {
 	            $list[$k]['topic'] = db('topic')->where(['id'=>$topic])->value('title');
