@@ -22,7 +22,7 @@ class Order extends Base
 			$orderWhere['o.orderid'] = $post['order_id'];
 		}
 
-		if(!empty($post['order_status'])){
+		if(isset($post['order_status']) && $post['order_status']!=''){
 			$orderWhere['o.status'] = $post['order_status'];
 		}
 
@@ -66,7 +66,7 @@ class Order extends Base
 		if(!empty($post['order_id'])){
 			$orderWhere['o.orderid'] = $post['order_id'];
 		}
-		if(!empty($post['order_status'])){
+		if(isset($post['order_status']) && $post['order_status']!=''){
 			$orderWhere['o.status'] = $post['order_status'];
 		}
 		if(!empty($post['order_time'])){
@@ -109,7 +109,7 @@ class Order extends Base
 		if(!empty($post['order_id'])){
 			$orderWhere['o.orderid'] = $post['order_id'];
 		}
-		if(!empty($post['order_status'])){
+		if(isset($post['order_status']) && $post['order_status']!=''){
 			$orderWhere['o.status'] = $post['order_status'];
 		}
 		if(!empty($post['order_time'])){
