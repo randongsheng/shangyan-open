@@ -118,7 +118,7 @@ class Label extends Base
 	{
 		$request = Request::instance();
 		$post = [];
-		$post['master_id'] = input('master_id');
+		$post['master_id'] = input('param.master_id');
 		$post['obey_id'] = $request->post('obey_id');
 		if(empty($post['master_id'])){
 			return json(['success'=>false,'code'=>'002','message'=>'标签ID不能为空']);
