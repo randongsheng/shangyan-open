@@ -278,6 +278,7 @@ class Teacher extends Model
                 }
             })
             ->field(['o.orderid','o.serverpersonid','zc.content','zc.score','zc.addtime as create_at','uu.avatarurl','uu.nickname','uf.realname'])
+            ->order('zc.addtime','desc')
             ->select();
             // 倾听评价
             $listenOrders = $order->alias('o')
@@ -293,6 +294,7 @@ class Teacher extends Model
                 }
             })
             ->field(['o.orderid','o.serverpersonid','lc.content','lc.score','lc.createtime as create_at','uu.avatarurl','uu.nickname','uf.realname'])
+            ->order('lc.createtime','desc')
             ->select();
             if(!$listenOrders && !$consultOrders){
                 return [];

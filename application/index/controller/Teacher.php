@@ -424,7 +424,7 @@ class Teacher extends Base
 					'o.content','o.orderid','om.starttime',
 					'om.endtime','o.alltime','o.sytime','om.number',
 					'o.type',$consoltSql.' as consult_con','uf.realname',
-					'u.avatarurl','uu.gender','uu.nickname','o.topic'
+					'u.avatarurl','uu.gender','uu.nickname','o.topic','om.stime','om.etime'
 				])
 				->order( 'o.createtime', 'desc' )
 				->paginate(20);
