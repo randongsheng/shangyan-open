@@ -104,7 +104,6 @@ class Listen extends Common
 		// 接收验证码
 		$code = input('post.code');
 		$checkcode = controller('tool/tools','controller')->checkSmscode($mobile,$code);
-		print_r($checkcode);
 		//如果验证成功修改数据
 		if($checkcode){
 			//查询当前状态

@@ -94,7 +94,8 @@ class Tools extends Controller
 		db('user')->where(['id'=>$serverpersonid])->update(['serverstatus'=>$status]);
 	}
 	//发送短信验证码操作
-	public function sendSmsCode($mobile,$operation,$explong=5){
+	public function sendSmsCode($operation,$explong=5){
+        $mobile = db('system')->where(['business_module'=>'administrator','name'=>'telephone'])->value('value');
 		$have = db('smscode')->where(['mobile'=>$mobile])->find();
 		$code = $this->createSMSCode();
 		$now = time();
