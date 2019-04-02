@@ -83,7 +83,7 @@ class TeacherEditLog extends Model
                         $education->rollBack();
                         $train->rollBack();
                         $userfield->rollBack();
-                        return 1;
+                        return false;
                     }
                     break;
 
@@ -216,7 +216,7 @@ class TeacherEditLog extends Model
             $education->commit();
             $train->commit();
             $userfield->commit();
-            return 2;
+            return true;
         }else{
             $teacher->rollBack();
             $certificate->rollBack();
@@ -224,7 +224,7 @@ class TeacherEditLog extends Model
             $education->rollBack();
             $train->rollBack();
             $userfield->rollBack();
-            return 3;
+            return false;
         }
     }
 
