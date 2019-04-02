@@ -652,6 +652,7 @@ class Teacher extends Base
 			}
 		}else if($action==1){
 			$result = $editlog->adopt($teacherId);
+			print($result);die;
 			if($result){
 				$innermail->addInnerMail(
 					$teacherData->teacher_name.'老师修改信息已通过审核！',
