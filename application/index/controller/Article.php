@@ -49,7 +49,7 @@ class Article extends Base
 		
 		$articles = $article
 		->where($articleWhere)
-		->field(['author','author_name','clinic_name','title','id','description','add_time','update_at','keywords','status'])
+		->field(['author','author_name','clinic_name','title','id','description','add_time','update_at','keywords','status','null as status_text'])
 		->order('add_time','desc')
 		->paginate(15);
 
