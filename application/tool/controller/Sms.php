@@ -27,7 +27,7 @@ class Sms extends Controller
 	// operation 操作如注册,修改手机号等..
 	// 
 	public function sendCodeSms($mobile,$operation,$code){
-		$templateId = 230394;
+		$templateId = 274708;
 		try {
 		    $ssender = new SmsSingleSender($this->baseappid, $this->baseappkey);
 		    $params = [$operation,$code];
