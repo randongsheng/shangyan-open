@@ -88,8 +88,9 @@ class Topic extends Model
     /**
      * 转时间
      */
-    public function getUpdateAtAttr($value)
+    public function getUpdateAtAttr($value,$data)
     {
+        if(empty($value)) return empty($data['create_at'])?'':date('Y-m-d H:i:s',$data['create_at']);
         return date('Y-m-d H:i:s',$value);
     }
 
