@@ -27,14 +27,14 @@ class Sms extends Controller
 	// operation 操作如注册,修改手机号等..
 	// 
 	public function sendCodeSms($mobile,$operation,$code){
-		$templateId = 230394; 
+		$templateId = 230394;
 		try {
 		    $ssender = new SmsSingleSender($this->baseappid, $this->baseappkey);
 		    $params = [$operation,$code];
 		    $result = $ssender->sendWithParam("86", $mobile, $templateId,
 		        $params, $this->basesmsSign, "", "");  // 签名参数未提供或者为空时，会使用默认签名发送短信
 		    $rsp = json_decode($result);
-		    if ($rsp['result'] == 0){
+		    if ($rsp->result == 0){
 		        sendJson(1,"发送成功");
             }
 		    echo $result;
