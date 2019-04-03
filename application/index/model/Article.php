@@ -33,13 +33,13 @@ class Article extends Model
     /**
      * 转文字
      */
-    public function getStatusAttr($value)
+    public function getStatusTextAttr($value,$data)
     {
         $statusDe = [0=>'未识别',1=>'草稿',2=>'待发布',3=>'上架',4=>'下架',5=>'待审核',6=>'驳回',7=>'删除'];
-        if(!array_key_exists($value, $statusDe)){
+        if(!array_key_exists($data['status'], $statusDe)){
             return '未识别';
         }
-        return $statusDe[$value];
+        return $statusDe[$data['status']];
     }
 
     /**
