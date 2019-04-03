@@ -16,13 +16,13 @@ class Article extends Base
 		$request = Request::instance();
 		$article = new ArticleModel;
 		$articleWhere = [];
-		$post = $request->only(['teacher_id','order_id','label_id','update_time','title','author_name','clinic_name']);
+		$post = $request->only(['teacher_id','status','label_id','update_time','title','author_name','clinic_name']);
 		if(!empty($post['teacher_id'])){
 			
 		}
 
-		if(!empty($post['order_id'])){
-			
+		if(isset($post['status']) && $post['status']!=''){
+			$articleWhere['status'] = $post['status'];
 		}
 
 		if(!empty($post['label_id'])){
@@ -49,7 +49,7 @@ class Article extends Base
 		
 		$articles = $article
 		->where($articleWhere)
-		->field(['author','author_name','clinic_name','title','id','description','add_time','update_at','keywords'])
+		->field(['author','author_name','clinic_name','title','id','description','add_time','update_at','keywords','status'])
 		->order('add_time','desc')
 		->paginate(15);
 
