@@ -163,13 +163,13 @@ class User extends Base
 		$user = new UserModel;
 		$blacklist = new Blacklist;
 		// 所有用户
-		$usercount = $user->where(['role'=>0])->count();
+		$usercount = $user->where(['role'=>0,'app'=>1])->count();
 		// 今日注册用户
-		$daynowreg = $user->where(['role'=>0])->whereTime('regtime','between',[$dayFirst,$dayEnd])->count();
+		$daynowreg = $user->where(['role'=>0,'app'=>1])->whereTime('regtime','between',[$dayFirst,$dayEnd])->count();
 		// 昨天注册用户
-		$yesterReg = $user->where(['role'=>0])->whereTime('regtime','between',[$yesterDayFirst,$yesterDayEnd])->count();
+		$yesterReg = $user->where(['role'=>0,'app'=>1])->whereTime('regtime','between',[$yesterDayFirst,$yesterDayEnd])->count();
 		// 活跃用户
-		$actives = $user->where(['role'=>0])->whereTime('last_login_time','between',[$dayFirst,$dayEnd])->count();
+		$actives = $user->where(['role'=>0,'app'=>1])->whereTime('last_login_time','between',[$dayFirst,$dayEnd])->count();
 		// 黑名单
 		$black = $blacklist->where(['type'=>0,'valid_is'=>1])->count();
 		// 返回结果
