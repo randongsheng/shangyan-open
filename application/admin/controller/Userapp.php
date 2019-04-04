@@ -228,7 +228,7 @@ class Userapp extends Common
    	}
    	//获取推荐老师
    	public function getPushTeacher(){
-   		$list = Db::name('user u')->field('id,realname,gender,sort,push_date')->join('userfield f','u.id=f.uid')->where(['push'=>1])->order('sort desc')->select();
+   		$list = Db::name('user u')->field('id,realname,gender,sort,push_date,c.clinic_name')->join('userfield f','u.id=f.uid')->join("clinic c","c.id = f.clinicid")->where(['push'=>1])->order('sort desc')->select();
    		sendJson(1,'老师列表',$list);
    	}
    	//获取推荐测试
