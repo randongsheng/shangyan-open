@@ -26,7 +26,7 @@ class Base extends Controller
         // 检测权限
         $control = lcfirst(request()->controller());
         $action = lcfirst(request()->action());
-        file_put_contents("/home/b.shangyanxinli.com/application/auth.txt",$control."|".$action,FILE_APPEND);
+        file_put_contents(ROOT_PATH."application/auth.txt",$control."|".$action,FILE_APPEND);
         if(empty(authCheck($control . '/' . $action))){
             sendJson(-1,'没有权限');
         }

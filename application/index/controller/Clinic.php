@@ -27,7 +27,7 @@ class Clinic extends Base
 	public function all()
 	{
 		$request = Request::instance();
-		$post = $request->only(['clinic_id','clinic_name','nature','status']);
+		$post = $request->only(['clinic_id','clinic_name','nature','status','service_type']);
 		$clinicWhere = [];
 		if(!empty($post['clinic_id'])){
 			$clinicWhere['c.clinic_id'] = $post['clinic_id'];
@@ -41,13 +41,23 @@ class Clinic extends Base
 			$clinicWhere['c.nature'] = $post['nature'];
 		}
 
-		if(!empty($post['status'])){
+		if(isset($post['status']) && $post['status']!=''){
 			$clinicWhere['c.status'] = $post['status'];
 		}
+		
 		$teacherCon = Db::name('userfield')->alias('uf')->where('uf.clinicid=c.id')->field('count(*)')->buildSql();
 		$clinic = new ClinicModel;
 		$clinics = $clinic->alias('c')
 		->where($clinicWhere)
+		->where(function($query)use($post){
+			if(isset($post['service_type']) && $post['service_type']!=''){
+				$w = [
+					['uf.qingtingstatus'=>1],
+					['uf.f2fstatus|uf.videostatus'=>1],
+				];
+				$query->where(Db::name('userfield')->alias('uf')->where('uf.clinicid=c.id')->where($w[$post['service_type']])->field('count(*)')->buildSql(),'>',0);
+			}
+		})
 		->field([
 			'c.id as clinic_id','c.clinic_name','c.nature','c.status',$teacherCon.' as teacher_con','c.logo','c.run_status'
 		])

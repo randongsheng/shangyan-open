@@ -75,6 +75,15 @@ class TeacherEditLog extends Model
                             'video_price'=>$info['video_price'],
                             'f2f_price'=>$info['f2f_price'],
                         ]);
+                        if(!$userRes){
+                            $teacher->rollBack();
+                            $certificate->rollBack();
+                            $supervise->rollBack();
+                            $education->rollBack();
+                            $train->rollBack();
+                            $userfield->rollBack();
+                            return false;
+                        }
                     }
                     if(!$result){
                         $teacher->rollBack();
@@ -112,7 +121,7 @@ class TeacherEditLog extends Model
                         $train->where(['teacher_id'=>$teacherId])->delete();
                         break;
                     }
-                    $result = $train->saveAll($info);
+                    $result = $train->allowField(true)->saveAll($info);
                     if(!$result){
                         $teacher->rollBack();
                         $certificate->rollBack();
