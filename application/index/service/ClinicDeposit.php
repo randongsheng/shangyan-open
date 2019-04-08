@@ -84,4 +84,20 @@ class ClinicDeposit extends Model
             return false;
         }
     }
+
+    /**
+     * 转入账户
+     */
+    public function getSelfAccountAttr($value)
+    {
+        return '保证金账户';
+    }
+
+    /**
+     * 对方账户
+     */
+    public function getHeAccountAttr($value)
+    {
+        return '微信';
+    }
 }
