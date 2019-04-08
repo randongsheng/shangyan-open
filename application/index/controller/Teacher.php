@@ -1202,6 +1202,57 @@ class Teacher extends Base
 		return json(['success'=>true,'code'=>'000','message'=>'上传完成','data'=>['filename'=>$filename['filename'],'no'=>$str]]);
 	}
 
+	/**
+	 * 基本信息修改
+	 */
+	public function editInfo()
+	{
+		$request = Request::instance();
+		$post = $request->only(['teacher_name','sex','birthday','enter_date','city','tel','teacher_photo_no','teacher_id']);
+		$adminId = Session::get('admin_id');
+		$redis = new Redis;
+		$imgPrefix = 'teacher_info_'.$adminId.'_';
+		// 验证参数是否符合规则
+		$vali = $this->validate($post, 'TeacherValidate.info_edit');
+		if( $vali !== true ){ // 返回错误的验证结果
+			return json(['success'=>false,'code'=>'002','message'=>$vali]);
+		}
+		$editData = [];
+		if(!empty($post['teacher_photo_no'])) {
+			if(!$redis->get2($imgPrefix.$post['teacher_photo_no'])){
+				return json(['success'=>false,'code'=>'002','message'=>'上身照图片已过期，请重新上传！']);
+			}
+			$editData['teacher_photo'] = $redis->get2($imgPrefix.$post['teacher_photo_no']);
+		}
+		$teacher = new TeacherModel;
+		$user = new User;
+		$citys = explode('/', $post['city']);
+		if(empty($citys[0])){
+			return json(['success'=>false,'code'=>'002','message'=>'请填写所在省份']);
+		}
+		if(empty($citys[1])){
+			return json(['success'=>false,'code'=>'002','message'=>'请填写所在市']);
+		}
+		$editData['teacher_name'] = $post['teacher_name'];
+		$editData['sex'] = $post['sex'];
+		$editData['birthday'] = $post['birthday'];
+		$editData['enter_date'] = $post['enter_date'];
+		$editData['province'] = $citys[0];
+		$editData['city'] = $citys[1];
+		$editData['area'] = $citys[2];
+		$editData['teacher_tel'] = $post['tel'];
+		$result = $teacher->updateTeacher($post['teacher_id'],$editData);
+		if($result){
+			return json([
+				'success'=>true,
+				'code'=>"000",
+				'message'=>'个人信息已保存',
+			]);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'保存出错，请稍后再试']);
+		}
+	}
+
 
 	/**
 	 * 专业信息

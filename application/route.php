@@ -153,6 +153,8 @@ Route::rule('/teacher/add/two','index/Teacher/teacherRole','POST');
 Route::rule('/teacher/add/three','index/Teacher/personalProfile','POST');
 // 添加老师第四步
 Route::rule('/teacher/add/four','index/Teacher/insertTeacher','POST');
+// 修改基本信息
+Route::rule('/teacher/edit/info','index/Teacher/editInfo','POST');
 // 专业信息修改
 Route::rule('/teacher/edit/duration','index/Teacher/durationInfo','POST');
 // 专业资质修改
