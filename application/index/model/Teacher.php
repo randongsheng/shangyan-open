@@ -49,7 +49,7 @@ class Teacher extends Model
     {
         $nowTime = time();
     	$teacher = Teacher::get($teacherId);
-    	foreach ($teacher as $key => $value) {
+    	foreach ($editData as $key => $value) {
             $teacher->$key = $value;
         }
         $teacher->update_at = $nowTime;
