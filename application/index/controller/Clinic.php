@@ -59,7 +59,7 @@ class Clinic extends Base
 			}
 		})
 		->field([
-			'c.id as clinic_id','c.clinic_name','c.nature','c.status',$teacherCon.' as teacher_con','c.logo','c.run_status'
+			'c.id as clinic_id','c.clinic_name','c.nature','c.status',$teacherCon.' as teacher_con','c.logo','c.run_status','c.email'
 		])
 		->order('create_at','desc')
 		->paginate(20);
@@ -1155,7 +1155,7 @@ class Clinic extends Base
 			// 法人信息
 			'liable_name','liable_identity_A_no','liable_identity_B_no','liable_tel','liable_ycode',
 			// 场地信息
-			'address','full_address','latitude','longitude','scene_photo_no','related','city','clinic_id'
+			'address','full_address','latitude','longitude','scene_photo_no','related','city','clinic_id','email'
 		];
 		// BIG BUG 、、、
 		@$params = $request->param()['clinic'];
@@ -1193,7 +1193,11 @@ class Clinic extends Base
 			return json(['success'=>false,'code'=>'002','message'=>$vali]);
 		}
 		$clinicId = $post['clinic_id'];
-		$queryData = $clinic->get($clinicId);
+		if(empty($clinicId)){
+			$queryData = $clinic->where(['email'=>$post['email']])->find();
+		}else{
+			$queryData = $clinic->get($clinicId);
+		}
 		$insertData = [];
 		if(($queryData->getData('status')==0&&$queryData['apply_schedule']==1) || ($queryData->getData('status')==-1&&$queryData['apply_schedule']==1)){
 			foreach ($fileParam as $key => $value) {
@@ -1298,7 +1302,7 @@ class Clinic extends Base
 					}
 				}else{
 					$k['related_photo'] = $redis->get2($imgKey.$value['related_photo_no']);
-					$k['clinic_id'] = $clinicId;
+					$k['clinic_id'] = $queryData['id'];
 				}
 				$k['related_name'] = trim($value['related_name']);
 				$k['related_desc'] = trim($value['related_desc']);
@@ -1312,7 +1316,7 @@ class Clinic extends Base
 			}
 		}
 		// 写入数据
-		$result = $clinic->editData($clinicId,$insertData);
+		$result = $clinic->editData($queryData['id'],$insertData);
 		if($result){
 			$response['success'] = true;
 			$response['code'] = '000';

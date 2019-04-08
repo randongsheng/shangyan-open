@@ -27,13 +27,11 @@ class ClinicValidate extends Validate
         'operator_identity_A_no'=>"checkFileStr",
         'operator_identity_B_no'=>"checkFileStr",
         'operator_tel'=>"require|max:11|regex:/^1[3-9]{1}[0-9]{9}$/",
-        'operator_ycode'=>"require",
         /*------法人信息start------*/
         'liable_name'=>"require|chsDash",
         'liable_identity_A_no'=>"checkFileStr",
         'liable_identity_B_no'=>"checkFileStr",
         'liable_tel'=>"require|max:11|regex:/^1[3-9]{1}[0-9]{9}$/",
-        'liable_ycode'=>"require",
         /*------场地信息start------*/
         'address'=>"require|max:150",
         'full_address|详细地址'=>"require|max:150",
@@ -118,7 +116,14 @@ class ClinicValidate extends Validate
     {
         $clinicId = $data['clinic_id'];
         $clinic = new Clinic;
-        $clinicData = $clinic->get($clinicId);
+        if(empty($clinicId)){
+            $clinicData = $clinic->get($clinicId);
+        }else{
+            $clinicData = $clinic->where(['email'=>$data['email']])->find();
+            if(!$clinicData){
+                return '请填写email';
+            }
+        }
         if($clinicData['status']==0){
             if(empty($value)){
                 return '请上传图片后提交';
