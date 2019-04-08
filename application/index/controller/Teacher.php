@@ -1241,7 +1241,7 @@ class Teacher extends Base
 		$editData['city'] = $citys[1];
 		$editData['area'] = $citys[2];
 		$editData['teacher_tel'] = $post['tel'];
-		$result = $teacher->updateTeacher($post['teacher_id'],$editData);
+		$result = $teacher->editData($post['teacher_id'],$editData);
 		if($result){
 			return json([
 				'success'=>true,

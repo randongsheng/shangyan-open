@@ -8,7 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: NickBai <1902822973@qq.com>
 // +----------------------------------------------------------------------
-namespace app\clinic\validate;
+namespace app\index\validate;
 
 use think\Validate;
 use app\index\model\Teacher;
