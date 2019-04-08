@@ -92,7 +92,7 @@ class Clinic extends Base
 				'c.latitude','c.longitude','c.suspend_reason','c.create_at','c.update_at',
 				'c.introduce','null as operator_identity_A','null as operator_identity_B',
 				'null as liable_identity_A','null as liable_identity_B','null as scene_photo1',
-				'null as scene_photo2','null as scene_photo3'
+				'null as scene_photo2','null as scene_photo3','c.full_address'
 			])
 			->find();
 			$clinicData['related'] = $related->where(['clinic_id'=>$clinicId])->select();
@@ -139,7 +139,7 @@ class Clinic extends Base
 				' as recharge_con',$chargingCon.' as charging_con',$consultTeachers.' as consult_teachers',
 				$listenTeachers.' as listen_teachers',$kxTeachers.' as kx_teachers',$outlineTeachers.' as outline_teachers',
 				'c.logo','c.create_at','c.tel','c.found_time','null as listen_label','null as consult_label'
-				,'c.id as clinic_id'
+				,'c.id as clinic_id','c.full_address'
 			])
 			->find();
 		}

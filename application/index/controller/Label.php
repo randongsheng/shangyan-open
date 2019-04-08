@@ -129,4 +129,22 @@ class Label extends Base
 			return json(['success'=>false,'code'=>"006",'message'=>'标签已经关联或不存在']);
 		}
 	}
+
+	/**
+	 * 所有标签
+	 */
+	public function hotTopics()
+	{
+		$topic = new Topic;
+		if(empty(input('param.key_word'))){
+			$topics = $topic->limit(14)->field(['title','id'])->select();
+		}else{
+			$topics = $topic->where(['title'=>['like','%'.input('param.key_word').'%']])->limit(14)->field(['title','id'])->select();
+		}
+		if($topics){
+			return json(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$topics]);
+		}else{
+			return json(['success'=>false,'code'=>'013','message'=>'没有查询到标签']);
+		}
+	}
 }

@@ -165,6 +165,8 @@ Route::rule('/teacher/edit/train','index/Teacher/teacherTrain','POST');
 Route::rule('/teacher/edit/supervise','index/Teacher/teacherSupervise','POST');
 // 受教经历修改
 Route::rule('/teacher/edit/education','index/Teacher/teacherEducation','POST');
+// 热门标签列表
+Route::rule('/label/searchot','index/Label/hotTopics','GET');
 
 return [
     '__pattern__' => [
