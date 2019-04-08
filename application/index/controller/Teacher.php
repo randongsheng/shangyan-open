@@ -445,12 +445,8 @@ class Teacher extends Base
 		$teacherId = input('param.teacher_id');
 		$teacher = new TeacherModel;
 		$uId = $teacher->where('teacher_id',$teacherId)->value('uid');
-		if(empty($uId)){
-			return json(['success'=>true,'code'=>'000','data'=>[]]);
-		}else{
-			$comments = $teacher->getComments($uId);
-			return json(['success'=>true,'code'=>'000','data'=>$comments]);
-		}
+		$comments = $teacher->getComments($uId);
+		return json(['success'=>true,'code'=>'000','data'=>$comments]);
 	}
 
 	/**
