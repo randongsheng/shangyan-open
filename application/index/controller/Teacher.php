@@ -833,8 +833,8 @@ class Teacher extends Base
 		$editData = [
 			'profile'=>$post['profile']
 		];
-		$teacher = new Teacher;
-		$result = $teacher->updateTeacher($post['teacher_id'],$editData);
+		$teacher = new TeacherModel;
+		$result = $teacher->editData($post['teacher_id'],$editData);
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'简介信息已保存']);
 		}else{
@@ -1343,8 +1343,8 @@ class Teacher extends Base
 				}
 				$certificateData['certificate_photo'] = $redis->get2($imgPrefix.$post[$i]['certificate_photo_no']);
 				$certificateData['create_at'] = $nowTime;
-				$certificateData['teacher_id'] = $post[$i]['teacher_id'];
-				$certificateData['uid'] = $teacher->where(['teacher_id'=>$post[$i]['teacher_id']])->value('uid');
+				$certificateData['teacher_id'] = $teacherId;
+				$certificateData['uid'] = $teacher->where(['teacher_id'=>$teacherId])->value('uid');
 			}else{
 				if(!empty($post[$i]['certificate_photo_no'])){
 					if(!$redis->get2($imgPrefix.$post[$i]['certificate_photo_no'])){
@@ -1359,7 +1359,6 @@ class Teacher extends Base
 			$certificateData['certificate_no'] = $post[$i]['certificate_no'];
 			$certificateData['award_date'] = $post[$i]['award_date'];
 			$certificateEditData[] = $certificateData;
-			$teacherId = $post[$i]['teacher_id'];
 		}
 		$result = $certificate->saveAll($certificateEditData);
 		if($result){
@@ -1438,8 +1437,8 @@ class Teacher extends Base
 					return json(['success'=>false,'code'=>'002','message'=>'培训证明图片已过期，请重新上传！']);
 				}
 				$trainData['train_photo'] = $redis->get2($imgPrefix.$post[$i]['train_photo_no']);
-				$trainData['teacher_id'] = $post[$i]['teacher_id'];
-				$trainData['uid'] = $teacher->where(['teacher_id'=>$post[$i]['teacher_id']])->value('uid');
+				$trainData['teacher_id'] = $teacherId;
+				$trainData['uid'] = $teacher->where(['teacher_id'=>$teacherId])->value('uid');
 				$trainData['create_at'] = $nowTime;
 			}else{
 				if(!empty($post[$i]['train_photo_no'])){
@@ -1455,7 +1454,6 @@ class Teacher extends Base
 			$trainData['train_start_time'] = $post[$i]['train_start_time'];
 			$trainData['train_end_time'] = $post[$i]['train_end_time'];
 			$trainData['train_course'] = $post[$i]['train_course'];
-			$teacherId = $post[$i]['teacher_id'];
 			$trainEditData[] = $trainData;
 		}
 		$result = $train->saveAll($trainEditData);
@@ -1490,8 +1488,8 @@ class Teacher extends Base
 			}
 			if(empty($post[$i]['supervise_id'])){
 				$superviseData['create_at'] = $nowTime;
-				$superviseData['teacher_id'] = $post[$i]['teacher_id'];
-				$superviseData['uid'] = $teacher->where(['teacher_id'=>$post[$i]['teacher_id']])->value('uid');
+				$superviseData['teacher_id'] = $teacherId;
+				$superviseData['uid'] = $teacher->where(['teacher_id'=>$teacherId])->value('uid');
 			}else{
 				$superviseData['supervise_id'] = $post[$i]['supervise_id'];
 				$superviseData['update_at'] = $nowTime;
@@ -1501,7 +1499,6 @@ class Teacher extends Base
 			$superviseData['supervise_tel'] = @$post[$i]['supervise_tel'];
 			$superviseData['supervise_duration'] = $post[$i]['supervise_duration'];
 			$superviseEditData[] = $superviseData;
-			$teacherId = $post[$i]['teacher_id'];
 		}
 		$result = $supervise->saveAll($superviseEditData);
 		if($result){
@@ -1539,7 +1536,7 @@ class Teacher extends Base
 				if(!$redis->get2($imgPrefix.$post[$i]['education_photo_no'])){
 					return json(['success'=>false,'code'=>'002','message'=>'学历证明图片已过期，请重新上传！']);
 				}
-				$editData['teacher_id'] = $post[$i]['teacher_id'];
+				$editData['teacher_id'] = $teacherId;
 				$editData['education_photo'] = $redis->get2($imgPrefix.$post[$i]['education_photo_no']);
 				$editData['create_at'] = $nowTime;
 			}else{
@@ -1558,7 +1555,6 @@ class Teacher extends Base
 			$editData['major'] = $post[$i]['major'];
 			$editData['unified_if'] = $post[$i]['unified_if'];
 			$editData['education_level'] = $post[$i]['education_level'];
-			$teacherId = $post[$i]['teacher_id'];
 			$eduInsertData[] = $editData;
 		}
 		$result = $education->saveAll($eduInsertData);

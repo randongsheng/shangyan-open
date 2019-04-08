@@ -89,13 +89,13 @@ class TeacherValidate extends Validate
         // 老师入驻第一步
         'info'=>['teacher_name','sex','birthday','enter_date','province','city','tel','teacher_photo_no'],
         // 老师入驻第四部资质证书
-        'certificate_eidt'  =>  ['certificate_name','certificate_no','award_date','teacher_id'],
+        'certificate_eidt'  =>  ['certificate_name','certificate_no','award_date',],
         // 老师入驻第四部培训
-        'train_edit'=>['train_mechanism','train_start_time','train_end_time','train_course','teacher_id'],
+        'train_edit'=>['train_mechanism','train_start_time','train_end_time','train_course',],
         // 老师入驻第四部督导
-        'supervise_edit'=>['supervise_mode','supervise_name','supervise_tel','supervise_duration','teacher_id'],
+        'supervise_edit'=>['supervise_mode','supervise_name','supervise_tel','supervise_duration',],
         // 老师入驻第四部学历
-        'education_edit'=>['school','start_time','end_time','major','unified_if','education_level','teacher_id'],
+        'education_edit'=>['school','start_time','end_time','major','unified_if','education_level',],
         // 老师入驻第四部时长
         'major_consult_eidt'=>['consult_number','consult_duration','listen_number','listen_duration','teacher_id','type','team_consult_duration','team_consult_number'],
         'major_growth_eidt'=>['growth_duration','teacher_id','type','team_growth_duration'],
