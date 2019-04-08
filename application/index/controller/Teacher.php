@@ -849,7 +849,7 @@ class Teacher extends Base
 	{
 		$request = Request::instance();
 		$redis = new Redis;
-		$clinicId = config('test_id');
+		$clinicId = Session::get('admin_id');
 		$imgPrefix = 'teacher_info_'.$clinicId.'_';
 		// 过滤参数
 		$post = $request->only([
@@ -875,10 +875,6 @@ class Teacher extends Base
 		$education = new TeacherEducation;
 		$userfield = new UserField;
 		$teacherData = $teacher->where('teacher_id',$post['teacher_id'])->field('clinic_id,teacher_id,uid')->find();
-		// 安全验证
-		if($clinicId != $teacherData['clinic_id']){
-			return json(['success'=>false,'code'=>'002','message'=>'您不能修改这位老师的资料']);
-		}
 		// 处理请求参数
 		$listenLabel = implode(',', $post['listen_label']);
 		$consultLabel = implode(',', $post['consult_label']);
