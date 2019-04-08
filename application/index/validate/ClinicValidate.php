@@ -112,15 +112,15 @@ class ClinicValidate extends Validate
 
     protected function checkFileStr($value,$rule,$data)
     {
-        $clinicId = $data['clinic_id'];
+        
         $clinic = new Clinic;
-        if(empty($clinicId)){
+        if(empty($data['clinic_id'])){
             $clinicData = $clinic->where(['email'=>$data['email']])->find();
             if(!$clinicData){
                 return '请填写email';
             }
         }else{
-            $clinicData = $clinic->get($clinicId);
+            $clinicData = $clinic->get($data['clinic_id']);
         }
         if($clinicData['status']==0){
             if(empty($value)){
