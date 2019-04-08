@@ -1192,11 +1192,10 @@ class Clinic extends Base
 		if( $vali !== true){ // 返回错误的验证结果
 			return json(['success'=>false,'code'=>'002','message'=>$vali]);
 		}
-		$clinicId = $post['clinic_id'];
-		if(empty($clinicId)){
+		if(empty($post['clinic_id'])){
 			$queryData = $clinic->where(['email'=>$post['email']])->find();
 		}else{
-			$queryData = $clinic->get($clinicId);
+			$queryData = $clinic->get($post['clinic_id']);
 		}
 		$insertData = [];
 		if(($queryData->getData('status')==0&&$queryData['apply_schedule']==1) || ($queryData->getData('status')==-1&&$queryData['apply_schedule']==1)){
