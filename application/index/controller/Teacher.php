@@ -1032,7 +1032,7 @@ class Teacher extends Base
 		$education->startTrans();
 		try{// 执行保存
 			// 专业信息杂项
-			$result = $teacher->updateTeacher($post['teacher_id'],$teacherEditData);
+			$result = $teacher->editData($post['teacher_id'],$teacherEditData);
 			if(!$result){
 				$teacher->rollBack();
 				return json(['success'=>false,'code'=>'006','message'=>'保存出错，请稍后重试！(1)']);
