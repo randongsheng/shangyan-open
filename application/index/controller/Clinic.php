@@ -544,9 +544,111 @@ class Clinic extends Base
 	}
 
 	/**
-	 * 保证金详细
+	 * 保证金交易记录
 	 */
 	public function depositDetails()
+	{
+		$request = Request::instance();
+		$payordeduct = input('param.payordeduct');
+		$clinicId = input('param.clinic_id');
+		$bond = new ClinicBond;
+		$deposit = new ClinicDeposit;
+		$closure = new ClinicClosure;
+		$bankcard = new ClinicBankCard;
+		$bondWhere = [];
+		$paySum = $deposit->where(['add_subtract'=>1,'clinic_id'=>$clinicId])->sum('recharge_money');
+		$charSum = $deposit->where(['add_subtract'=>0,'clinic_id'=>$clinicId])->sum('charging_money');
+		$balance = $paySum-$charSum;
+		$cancelTotal = $closure->where(['clinic_id'=>$clinicId,'progress_status'=>2])->value('deposit_money');
+		$card = $bankcard->where(['clinic_id'=>$clinicId])->find();
+		$card->card_bank = bankInfo($card->card_number);
+		if(!empty($payordeduct) && $payordeduct=='pay'){ // 充值记录
+			$bondWhere['de.clinic_id'] = $clinicId;
+			$bondWhere['o.pay_state'] = 1;
+			$bondWhere['de.add_subtract'] = 1;
+			$queryData = $deposit->alias('de')
+			->join('sy_clinic_bond_order o','de.bonds_id=o.bond_id','LEFT')
+			->where($bondWhere)
+			->field([
+				'de.deposit_id',
+				'de.create_at deposit_create_time',
+				'o.create_at order_create_time',
+				'o.order_number',
+				'de.add_subtract',
+				'de.charging_money',
+				'o.pay_state',
+				'o.sum_money',
+				'o.update_at pay_time',
+				'de.sketch',
+				'null as self_account',
+				'null as he_account'
+			])
+			->paginate(15);
+		}else if(!empty($payordeduct) && $payordeduct=='deduct'){ // 扣款记录
+			$bondWhere['de.clinic_id'] = $clinicId;
+			$bondWhere['de.add_subtract'] = 0;
+			$queryData = $deposit->alias('de')
+			->join('sy_clinic_bond_order o','de.bonds_id=o.bond_id','LEFT')
+			->where($bondWhere)
+			->field([
+				'de.deposit_id',
+				'de.create_at deposit_create_time',
+				'o.create_at order_create_time',
+				'o.order_number',
+				'de.add_subtract',
+				'de.charging_money',
+				'o.pay_state',
+				'o.sum_money',
+				'o.update_at pay_time',
+				'de.sketch',
+				'null as self_account',
+				'null as he_account'
+			])
+			->paginate(15);
+		}else{ // 全部
+			$bondWhere['de.clinic_id'] = $clinicId;
+			$queryData = $deposit->alias('de')
+			->join('sy_clinic_bond_order o','o.bond_id=de.bonds_id','LEFT')
+			->where($bondWhere)
+			->field([
+				'de.deposit_id',
+				'de.create_at deposit_create_time',
+				'o.create_at order_create_time',
+				'o.order_number',
+				'de.add_subtract',
+				'de.charging_money',
+				'o.pay_state',
+				'o.sum_money',
+				'o.update_at pay_time',
+				'de.sketch',
+				'null as self_account',
+				'null as he_account'
+			])
+			->paginate(15);
+		}
+		if($queryData){
+			return json([
+				'success'=>true,
+				'code'=>'000',
+				'message'=>'查询成功',
+				'data'=>[
+					'query'=>$queryData,
+					'balance'=>$balance,
+					'standard'=>config('deoisit'),
+					'char_total'=>$charSum,
+					'cancel_total'=>$cancelTotal,
+					'bankcard'=>$card,
+				]
+			]);
+		}else{
+			return json(['success'=>false,'code'=>'013','message'=>'查询出错']);
+		}
+	}
+
+	/**
+	 * 保证金详细
+	 */
+	/*public function depositDetails()
 	{
 		$request = Request::instance();
 		$payordeduct = input('param.payordeduct');
@@ -628,7 +730,7 @@ class Clinic extends Base
 		}else{
 			return json(['success'=>false,'code'=>'013','message'=>'查询出错']);
 		}
-	}
+	}*/
 
 	/**
 	 * 关停申请列
