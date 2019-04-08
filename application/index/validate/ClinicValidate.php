@@ -93,7 +93,7 @@ class ClinicValidate extends Validate
             'clinic_name','logo_no','business_license_no','found_time',
             'operator_name','operator_identity_A_no','operator_identity_B_no','operator_tel',
             'liable_name','liable_identity_A_no','liable_identity_B_no','liable_tel',
-            'address','full_address','introduce','city','clinic_id',
+            'address','full_address','introduce','city','email',
         ],
         'related' =>  ['related_name','related_desc','related_link'],
         // 规则
