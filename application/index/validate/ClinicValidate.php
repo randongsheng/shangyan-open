@@ -71,7 +71,6 @@ class ClinicValidate extends Validate
         'operator_tel.require'=>'运营人员手机号码必填',
         'operator_tel.max'=>'手机号码格式不正确',
         'operator_tel.regex'=>'手机号码格式不正确',
-        'operator_ycode.require'=>'验证码必填',
         /*------法人------*/
         'liable_name.require'=>'法人姓名必填',
         'liable_name.chsDash'=>'法人姓名不可存在特殊字符',
@@ -80,7 +79,6 @@ class ClinicValidate extends Validate
         'liable_tel.require'=>'法人手机号码必填',
         'liable_tel.max'=>'手机号码格式不正确',
         'liable_tel.regex'=>'手机号码格式不正确',
-        'liable_ycode.require'=>'验证码必填',
         /*------场地信息------*/
         'address.require'=>'请填写诊所地址',
         /*------其他资料------*/
@@ -93,8 +91,8 @@ class ClinicValidate extends Validate
     protected $scene = [
         'clinic_info_all'=>[
             'clinic_name','logo_no','business_license_no','found_time',
-            'operator_name','operator_identity_A_no','operator_identity_B_no','operator_tel','operator_ycode',
-            'liable_name','liable_identity_A_no','liable_identity_B_no','liable_tel','liable_ycode',
+            'operator_name','operator_identity_A_no','operator_identity_B_no','operator_tel',
+            'liable_name','liable_identity_A_no','liable_identity_B_no','liable_tel',
             'address','full_address','introduce','city','clinic_id',
         ],
         'related' =>  ['related_name','related_desc','related_link'],
@@ -117,12 +115,12 @@ class ClinicValidate extends Validate
         $clinicId = $data['clinic_id'];
         $clinic = new Clinic;
         if(empty($clinicId)){
-            $clinicData = $clinic->get($clinicId);
-        }else{
             $clinicData = $clinic->where(['email'=>$data['email']])->find();
             if(!$clinicData){
                 return '请填写email';
             }
+        }else{
+            $clinicData = $clinic->get($clinicId);
         }
         if($clinicData['status']==0){
             if(empty($value)){
