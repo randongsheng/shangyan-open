@@ -12,6 +12,7 @@ namespace app\index\service;
 
 use think\Model;
 use app\index\model\Teacher;
+use think\Validate;
 
 /**
  * 老师资质
@@ -36,5 +37,15 @@ class TeacherTrain extends Model
     public function getUpdateAtAttr($value)
     {
         return date('Y-m-d H:i:s',$value);
+    }
+
+    /**
+     * 图片
+     */
+    public function getTrainPhotoAttr($value)
+    {
+        if(Validate::is($value,'url')) return $value;
+        
+        return config('save_protocol').config('save_url').ltrim($value,'/');
     }
 }
