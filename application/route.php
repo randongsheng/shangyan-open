@@ -169,6 +169,10 @@ Route::rule('/teacher/edit/supervise','index/Teacher/teacherSupervise','POST');
 Route::rule('/teacher/edit/education','index/Teacher/teacherEducation','POST');
 // 热门标签列表
 Route::rule('/label/searchot','index/Label/hotTopics','GET');
+// 修改老师擅长标签
+Route::rule('/teacher/label/edit','index/Teacher/labelEdit','POST');
+// 修改老师咨询价格
+Route::rule('/teacher/price/edit','index/Teacher/editConsult','POST');
 
 return [
     '__pattern__' => [

@@ -1195,6 +1195,85 @@ class Teacher extends Base
 	}
 
 	/**
+	 * 修改咨询价格
+	 */
+	public function editConsult()
+	{
+		$request = Request::instance();
+		$teacherId = input('post.teacher_id');
+		$price = input('post.price');
+		$type = input('post.type');
+		$typeDe = ['video','f2f'];
+		if(!in_array($type,$typeDe)){
+			return json(['success'=>false,'code'=>"014",'message'=>'没有预定义的参数！']);
+		}
+		$teacherer = TeacherModel::alias('t')->join('sy_user u','u.id=t.uid','LEFT')->where(['t.teacher_id'=>$teacherId])->field(['u.id','t.*','u.level'])->find();
+		if(!$teacherer){
+			return json(['success'=>false,'code'=>"014",'message'=>'没有这个老师！']);
+		}
+		if(empty($teacherer->level)){
+			$teacherLevel = 1;
+		}else{
+			$teacherLevel = $teacherer->level<=0?1:$teacherer->level;
+		}
+		$spriceConfig = Db::name('system')->where(['business_module'=>'consultation','name'=>'lv'.$teacherLevel.'_sprice'])->value('value');
+		$epriceConfig = Db::name('system')->where(['business_module'=>'consultation','name'=>'lv'.$teacherLevel.'_eprice'])->value('value');
+		if($spriceConfig>$price){
+			return json(['success'=>false,'code'=>"007",'message'=>'价格不能低于'.$spriceConfig.'元']);
+		}
+		if($epriceConfig<$price){
+			return json(['success'=>false,'code'=>"007",'message'=>'价格不能高于'.$epriceConfig.'元']);
+		}
+
+		$field = $type.'_price';
+		if($teacherer->$field==$price){
+			return json(['success'=>false,'code'=>'007','message'=>'您的价格没有任何变动无需保存！']);
+		}
+		if(!empty($teacherer->uid)){
+			Db::name('userfield')->where('uid',$teacherer->uid)->update([$field=>$price]);
+		}
+		$teacherer->$field = $price;
+		$result = $teacherer->save();
+		if($result){
+			return json(['success'=>true,'code'=>'000','message'=>'价格已提交，需等候审核！']);
+		}else{
+			return json(['success'=>false,'code'=>"006",'message'=>'保存出错，请稍后重试']);
+		}
+	}
+
+
+
+	/**
+	 * 修改擅长标签
+	 */
+	public function labelEdit()
+	{
+		$request = Request::instance();
+		$post = $request->only(['label_id','teacher_id','type']);
+
+		$labelId = @$post['label_id'];
+		$teacherId = @$post['teacher_id'];
+		// listen consult
+		$type = strtolower(@$post['type']);
+		$teacher = new TeacherModel;
+		$teacherData = $teacher->where(['teacher_id'=>$teacherId])->field(['teacher_id','listen_label','consult_label'])->find();
+		if(!$teacherData){
+			return json(['success'=>true,'code'=>'013','message'=>'该老师已经注销']);
+		}
+		$resLabels = [];
+		for ($i=0; $i < count($labelId); $i++) {
+			$resLabels[] = (string)$labelId[$i];
+		}
+		$labelMethod = $type.'_label';
+		$teacherData->$labelMethod = implode(',', array_unique($resLabels));
+		if($teacherData->save()){
+			return json(['success'=>true,'code'=>'000','message'=>'保存成功']);
+		}else{
+			return json(['success'=>false,'code'=>'013','message'=>'您没有做任何修改']);
+		}
+	}
+
+	/**
 	 * 基本信息修改
 	 */
 	public function editInfo()
