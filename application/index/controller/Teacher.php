@@ -229,7 +229,7 @@ class Teacher extends Base
 				't.listen_number','t.listen_duration','t.growth_duration','null as end_at','t.cooper_at',
 				't.adopt_at','t.teacher_name','t.teacher_photo','null as teacher_birthday','t.birthday',
 				't.enter_date','t.listen_label','t.consult_label','t.video_price','t.f2f_price',
-				't.growth_at','t.team_consult_number','t.team_consult_duration','t.info_status'
+				't.growth_at','t.team_consult_number','t.team_consult_duration','t.info_status','t.teacher_id'
 			])
 			->find();
 			if(empty($userData['info'])){
