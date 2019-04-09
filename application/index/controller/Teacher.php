@@ -1235,7 +1235,7 @@ class Teacher extends Base
 		$teacherer->$field = $price;
 		$result = $teacherer->save();
 		if($result){
-			return json(['success'=>true,'code'=>'000','message'=>'价格已提交，需等候审核！']);
+			return json(['success'=>true,'code'=>'000','message'=>'价格已保存并生效！']);
 		}else{
 			return json(['success'=>false,'code'=>"006",'message'=>'保存出错，请稍后重试']);
 		}
@@ -1267,7 +1267,7 @@ class Teacher extends Base
 		$labelMethod = $type.'_label';
 		$teacherData->$labelMethod = implode(',', array_unique($resLabels));
 		if($teacherData->save()){
-			return json(['success'=>true,'code'=>'000','message'=>'保存成功']);
+			return json(['success'=>true,'code'=>'000','message'=>'标签已保存并生效！']);
 		}else{
 			return json(['success'=>false,'code'=>'013','message'=>'您没有做任何修改']);
 		}
