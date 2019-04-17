@@ -99,6 +99,8 @@ Route::rule('/label/details','index/Label/labelDetails','GET');
 Route::rule('/label/add','index/Label/addLabel','POST');
 // 标签关联
 Route::rule('/label/relevance','index/Label/relevance','POST');
+// 标签上下架
+Route::rule('/label/management','index/Label/management','POST');
 // 文章列表
 Route::rule('/articles','index/Article/articles','GET');
 // 动态发布

@@ -147,4 +147,24 @@ class Label extends Base
 			return json(['success'=>false,'code'=>'013','message'=>'没有查询到标签']);
 		}
 	}
+
+	/**
+	 * 标签上下架
+	 */
+	public function management()
+	{
+		$topic = new Topic;
+		$nowTime = time();
+		$request = Request::instance();
+		$post = $request->only(['label_id','action']);
+		$actionDe = ['down'=>0,'up'=>1];
+		$label = $topic->where(['id'=>$post['label_id']])->find();
+		$label->status = $actionDe[$post['action']];
+		$label->update_at = $nowTime;
+		if($label->save()){
+			return json(['success'=>true,'code'=>'000','message'=>'操作成功，修改已生效！']);
+		}else{
+			return json(['success'=>false,'code'=>'006','message'=>'操作出错，请稍后再试！']);
+		}
+	}
 }
