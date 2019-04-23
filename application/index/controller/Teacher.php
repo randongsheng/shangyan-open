@@ -73,7 +73,7 @@ class Teacher extends Base
 		->join('sy_clinic c','c.id=t.clinic_id','LEFT')
 		->where($teacherWhere)
 		->field([
-			't.teacher_photo','t.teacher_id','t.teacher_name','t.sex','t.birthday','u.level','t.teacher_tel','c.clinic_name','t.teacher_role','u.serverstatus','t.info_status','t.create_at'
+			't.teacher_photo','t.teacher_id','t.teacher_name','t.sex','t.birthday','u.level','t.teacher_tel','c.clinic_name','t.teacher_role','u.serverstatus','t.info_status','t.create_at','t.uid'
 		])
 		->order('t.create_at','desc')
 		->paginate($item);

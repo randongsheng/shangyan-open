@@ -15,7 +15,10 @@ header('Access-Control-Allow-Origin: '.$ori);
 if($ori!='*'){header("Access-Control-Allow-Credentials:true");}
 header('Access-Control-Allow-Methods:GET, POST, PATCH, PUT, DELETE');
 header('Access-Control-Allow-Headers:Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With');
-
+if($_SERVER['REQUEST_METHOD'] == 'OPTIONS'){
+    echo 'options成功';
+    die;
+}
 // [ 应用入口文件 ]
 
 // 定义应用目录

@@ -95,6 +95,11 @@ class ClinicValidate extends Validate
             'liable_name','liable_identity_A_no','liable_identity_B_no','liable_tel',
             'address','full_address','introduce','city','email',
         ],
+        'clinic_info_all_2'=>[
+            'clinic_name','logo_no','business_license_no',
+            'operator_name','operator_identity_A_no','operator_identity_B_no','operator_tel',
+            'address','full_address','introduce','city','email',
+        ],
         'related' =>  ['related_name','related_desc','related_link'],
         // 规则
         'rule'=>['rule_title','rule_content','rule_module_name'],

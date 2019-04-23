@@ -1188,7 +1188,8 @@ class Clinic extends Base
 		$response = [];
 		$response['path'] = config('IMGPRESENT');
 		$imgKey = 'clinic_info_'.$adminId.'_';
-		$vali = $this->validate($post, 'ClinicValidate.clinic_info_all');
+		$valiMethod = $post['nature']==1?'clinic_info_all_2':'clinic_info_all';
+		$vali = $this->validate($post, 'ClinicValidate.'.$valiMethod);
 		if( $vali !== true){ // 返回错误的验证结果
 			return json(['success'=>false,'code'=>'002','message'=>$vali]);
 		}
@@ -1200,6 +1201,9 @@ class Clinic extends Base
 		$insertData = [];
 		if(($queryData->getData('status')==0&&$queryData['apply_schedule']==1) || ($queryData->getData('status')==-1&&$queryData['apply_schedule']==1)){
 			foreach ($fileParam as $key => $value) {
+				if($key=='liable_identity' && $post['nature']==1){
+					continue;
+				}
 				if(is_array($value)){
 					$fieldData = explode(',',$queryData->getData($key));
 					if(@$redis->get2($imgKey.$post[$value[0]])) {
@@ -1270,12 +1274,12 @@ class Clinic extends Base
 			}
 		}
 		$insertData['clinic_name'] = trim($post['clinic_name']);
-		$insertData['found_time'] = trim($post['found_time']);
+		$insertData['found_time'] = @trim($post['found_time']);
 		$insertData['introduce'] = trim($post['introduce']);
 		$insertData['operator_name'] = trim($post['operator_name']);
 		$insertData['operator_tel'] = trim($post['operator_tel']);
-		$insertData['liable_name'] = trim($post['liable_name']);
-		$insertData['liable_tel'] = trim($post['liable_tel']);
+		$insertData['liable_name'] = @trim($post['liable_name']);
+		$insertData['liable_tel'] = @trim($post['liable_tel']);
 		$insertData['address'] = trim($post['address']);
 		$insertData['full_address'] = trim($post['full_address']);
 		$insertData['city'] = trim($post['city']);
