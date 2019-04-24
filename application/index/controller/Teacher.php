@@ -1393,6 +1393,7 @@ class Teacher extends Base
 		$nowTime = time();
 		$redis = new Redis;
 		$teacher = new TeacherModel;
+		$userfield = new UserField;
 		$adminId = Session::get('admin_id');
 		$imgPrefix = 'teacher_info_'.$adminId.'_';
 		$teacherId = input('param.teacher_id');
@@ -1400,6 +1401,7 @@ class Teacher extends Base
 		if(empty($post)){
 			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
 		}
+		$teacherData = $teacher->where(['teacher_id'=>$teacherId])->find();
 		for ($i=0; $i < count($post); $i++) { 
 			$certificateData = [];
 			// 验证参数是否符合规则
@@ -1432,6 +1434,9 @@ class Teacher extends Base
 			$certificateEditData[] = $certificateData;
 		}
 		$result = $certificate->saveAll($certificateEditData);
+		if(!empty($teacherData->uid)){
+			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
+		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'保存成功']);
 		}else{
@@ -1454,6 +1459,9 @@ class Teacher extends Base
 		$train = new TeacherTrain;
 		$supervise = new TeacherSupervise;
 		$education = new TeacherEducation;
+		$teacher = new TeacherModel;
+		$userfield = new UserField;
+		$teacherData = $teacher->where(['teacher_id'=>$post['teacher_id']])->find();
 		switch (strtolower($post['type'])) {
 			case 'certificate':
 				$result = $certificate->where(['certificate_id'=>['in',implode(',',$post['info_id'])],'teacher_id'=>$post['teacher_id']])->delete();
@@ -1470,6 +1478,9 @@ class Teacher extends Base
 			
 			default:
 				return json(['success'=>false,'code'=>'014','message'=>'没有预定义的参数！']);
+		}
+		if(!empty($teacherData->uid)){
+			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
 		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'删除成功']);
@@ -1488,6 +1499,7 @@ class Teacher extends Base
 		$train = new TeacherTrain;
 		$redis = new Redis;
 		$teacher = new TeacherModel;
+		$userfield = new UserField;
 		$nowTime = time();
 		$adminId = Session::get('admin_id');
 		$imgPrefix = 'teacher_info_'.$adminId.'_';
@@ -1496,6 +1508,7 @@ class Teacher extends Base
 		if(empty($post)){
 			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
 		}
+		$teacherData = $teacher->where(['teacher_id'=>$teacherId])->find();
 		for ($i=0; $i < count($post); $i++) {
 			$trainData = [];
 			// 验证参数是否符合规则
@@ -1528,6 +1541,9 @@ class Teacher extends Base
 			$trainEditData[] = $trainData;
 		}
 		$result = $train->saveAll($trainEditData);
+		if(!empty($teacherData->uid)){
+			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
+		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'添加操作提交成功，需等待审核通过']);  
 		}else{
@@ -1545,11 +1561,13 @@ class Teacher extends Base
 		$nowTime = time(); 
 		$supervise = new TeacherSupervise;
 		$teacher = new TeacherModel;
+		$userfield = new UserField;
 		$superviseEditData = [];
 		$teacherId = input('param.teacher_id');
 		if(empty($post)){
 			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
 		}
+		$teacherData = $teacher->where(['teacher_id'=>$teacherId])->find();
 		for ($i=0; $i < count($post); $i++) { 
 			$superviseData = [];
 			// 验证参数是否符合规则
@@ -1572,6 +1590,9 @@ class Teacher extends Base
 			$superviseEditData[] = $superviseData;
 		}
 		$result = $supervise->saveAll($superviseEditData);
+		if(!empty($teacherData->uid)){
+			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
+		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'添加成功']);
 		}else{
@@ -1587,6 +1608,8 @@ class Teacher extends Base
 		$request = Request::instance();
 		$education = new TeacherEducation;
 		$redis = new Redis;
+		$teacher = new TeacherModel;
+		$userfield = new UserField;
 		$nowTime = time();
 		$adminId = Session::get('admin_id');
 		$imgPrefix = 'teacher_info_'.$adminId.'_';
@@ -1596,6 +1619,7 @@ class Teacher extends Base
 		if(empty($post)){
 			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
 		}
+		$teacherData = $teacher->where(['teacher_id'=>$teacherId])->find();
 		for ($i=0; $i < count($post); $i++) {
 			$editData = [];
 			// 验证参数是否符合规则
@@ -1629,6 +1653,9 @@ class Teacher extends Base
 			$eduInsertData[] = $editData;
 		}
 		$result = $education->saveAll($eduInsertData);
+		if(!empty($teacherData->uid)){
+			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
+		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'添加成功']);
 		}else{

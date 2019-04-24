@@ -40,6 +40,38 @@ class TeacherEditLog extends Model
     }
 
     /**
+     * 获取老师所有附加信息
+     */
+    public function getContent($uid=false)
+    {
+        // 教育经历
+        $teacher_education = TeacherEducation::where(['uid'=>$uid])->field('*,null as edu')->select();
+        // 资质证书
+        $teacher_certificate = TeacherCertificate::where(['uid'=>$uid])->select();
+        // 督导经历
+        $teacher_supervise = TeacherSupervise::where(['uid'=>$uid])->select();
+        // 培训经历
+        $teacher_train = TeacherTrain::where(['uid'=>$uid])->select();
+        // 个案时长等信息
+        $teacher = Teacher::where(['uid'=>$uid])->field(['consult_number','consult_duration','growth_duration'])->find();
+        // 个案经历
+        return [
+            'teacher_education'=>$teacher_education,
+            'teacher_certificate'=>$teacher_certificate,
+            'teacher_supervise'=>$teacher_supervise,
+            'teacher_train'=>$teacher_train,
+            // 个案数量
+            'consult_number'=>$teacher['consult_number'],
+            // 总时长
+            'consult_duration'=>$teacher['consult_duration'],
+            // 个人成长时长
+            'growth_duration'=>$teacher['growth_duration'],
+            // 督导总时长
+            'supervisetime'=>array_sum(array_column($teacher_supervise,'supervise_duration'))
+        ];
+    }
+
+    /**
      * 专业信息修改通过审核
      */
     public function adopt($teacherId)
@@ -62,6 +94,7 @@ class TeacherEditLog extends Model
 
         $logs = $this->where(['teacher_id'=>$teacherId,'status'=>0])->select();
         $teacherData = Teacher::where(['teacher_id'=>$teacherId])->find();
+        $infoZy = false;
         foreach ($logs as $k => $v) {
             switch ($v['model']) {
                 case '0':
@@ -95,6 +128,7 @@ class TeacherEditLog extends Model
                         return false;
                     }
                     $certificate->where(['certificate_id'=>['not in',array_column(collection($result)->toArray(),'certificate_id')],'teacher_id'=>$teacherId])->delete();
+                    $infoZy = true;
                     break;
 
                 case '2':
@@ -114,6 +148,7 @@ class TeacherEditLog extends Model
                         return false;
                     }
                     $train->where(['train_id'=>['not in',array_column(collection($result)->toArray(),'train_id')],'teacher_id'=>$teacherId])->delete();
+                    $infoZy = true;
                     break;
 
                 case '3':
@@ -172,6 +207,7 @@ class TeacherEditLog extends Model
                         return false;
                     }
                     $supervise->where(['supervise_id'=>['not in',array_column(collection($result)->toArray(),'supervise_id')],'teacher_id'=>$teacherId])->delete();
+                    $infoZy = true;
                     break;
 
                 case '6':
@@ -191,12 +227,16 @@ class TeacherEditLog extends Model
                         return false;
                     }
                     $education->where(['education_id'=>['not in',array_column(collection($result)->toArray(),'education_id')],'teacher_id'=>$teacherId])->delete();
+                    $infoZy = true;
                     break;
                 
                 default:
                     # code...
                     break;
             }
+        }// 1 2 5 6
+        if($infoZy){
+            $userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
         }
         $result = $this->where(['teacher_id'=>$teacherId,'status'=>0])->update(['status'=>1]);
         $teacherResult = $teacher->where(['teacher_id'=>$teacherId])->update(['info_status'=>2]);
