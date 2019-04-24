@@ -53,7 +53,7 @@ class TeacherEditLog extends Model
         // 培训经历
         $teacher_train = TeacherTrain::where(['uid'=>$uid])->select();
         // 个案时长等信息
-        $teacher = Teacher::where(['uid'=>$uid])->field(['consult_number','consult_duration','growth_duration'])->find();
+        $teacher = Teacher::where(['uid'=>$uid])->field(['consult_number','consult_duration','growth_duration','profile'])->find();
         // 个案经历
         return [
             'teacher_education'=>$teacher_education,
@@ -67,7 +67,9 @@ class TeacherEditLog extends Model
             // 个人成长时长
             'growth_duration'=>$teacher['growth_duration'],
             // 督导总时长
-            'supervisetime'=>array_sum(array_column($teacher_supervise,'supervise_duration'))
+            'supervisetime'=>array_sum(array_column($teacher_supervise,'supervise_duration')),
+            // 个人简介
+            'profile'=>$teacher['profile'],
         ];
     }
 

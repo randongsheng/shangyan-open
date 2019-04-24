@@ -830,7 +830,12 @@ class Teacher extends Base
 			'profile'=>$post['profile']
 		];
 		$teacher = new TeacherModel;
+		$userfield = new UserField;
+		$teacherData = $teacher->where(['teacher_id'=>$post['teacher_id']])->find();
 		$result = $teacher->editData($post['teacher_id'],$editData);
+		if(!empty($teacherData->uid)){
+			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>$this->getContent($teacherData->uid)]);
+		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'简介信息已保存']);
 		}else{
@@ -1114,7 +1119,7 @@ class Teacher extends Base
 		// 培训经历
 		$teacher_train = TeacherTrain::where(['uid'=>$uid])->select();
 		// 个案时长等信息
-		$teacher = TeacherModel::where(['uid'=>$uid])->field(['consult_number','consult_duration','growth_duration'])->find();
+		$teacher = TeacherModel::where(['uid'=>$uid])->field(['consult_number','consult_duration','growth_duration','profile'])->find();
 		// 个案经历
 		return [
 			'teacher_education'=>$teacher_education,
@@ -1128,7 +1133,9 @@ class Teacher extends Base
 			// 个人成长时长
 			'growth_duration'=>$teacher['growth_duration'],
 			// 督导总时长
-			'supervisetime'=>array_sum(array_column($teacher_supervise,'supervise_duration'))
+			'supervisetime'=>array_sum(array_column($teacher_supervise,'supervise_duration')),
+            // 个人简介
+            'profile'=>$teacher['profile'],
 		];
 	}
 
