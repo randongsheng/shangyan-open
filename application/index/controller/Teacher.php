@@ -834,7 +834,7 @@ class Teacher extends Base
 		$teacherData = $teacher->where(['teacher_id'=>$post['teacher_id']])->find();
 		$result = $teacher->editData($post['teacher_id'],$editData);
 		if(!empty($teacherData->uid)){
-			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>$this->getContent($teacherData->uid)]);
+			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
 		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'简介信息已保存']);
