@@ -1521,10 +1521,12 @@ class Teacher extends Base
 		$redis = new Redis;
 		$teacher = new TeacherModel;
 		$userfield = new UserField;
+		$editlog = new TeacherEditLog;
 		$nowTime = time();
 		$adminId = Session::get('admin_id');
 		$imgPrefix = 'teacher_info_'.$adminId.'_';
 		$teacherId = input('param.teacher_id');
+		$isExamine = (bool) input('param.examine',0);
 		$trainEditData = [];
 		if(empty($post)){
 			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
@@ -1565,6 +1567,12 @@ class Teacher extends Base
 		if(!empty($teacherData->uid)){
 			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
 		}
+		if($isExamine){
+			// 审核
+			$teacherData->info_status = 2;
+			$teacherData->save();
+			$editlog->where(['teacher_id'=>$teacherId,'status'=>0,'model'=>2])->update(['status'=>1]);
+		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'添加操作提交成功，需等待审核通过']);  
 		}else{
@@ -1583,8 +1591,10 @@ class Teacher extends Base
 		$supervise = new TeacherSupervise;
 		$teacher = new TeacherModel;
 		$userfield = new UserField;
+		$editlog = new TeacherEditLog;
 		$superviseEditData = [];
 		$teacherId = input('param.teacher_id');
+		$isExamine = (bool) input('param.examine',0);
 		if(empty($post)){
 			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
 		}
@@ -1614,6 +1624,12 @@ class Teacher extends Base
 		if(!empty($teacherData->uid)){
 			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
 		}
+		if($isExamine){
+			// 审核
+			$teacherData->info_status = 2;
+			$teacherData->save();
+			$editlog->where(['teacher_id'=>$teacherId,'status'=>0,'model'=>5])->update(['status'=>1]);
+		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'添加成功']);
 		}else{
@@ -1631,12 +1647,14 @@ class Teacher extends Base
 		$redis = new Redis;
 		$teacher = new TeacherModel;
 		$userfield = new UserField;
+		$editlog = new TeacherEditLog;
 		$nowTime = time();
 		$adminId = Session::get('admin_id');
 		$imgPrefix = 'teacher_info_'.$adminId.'_';
 		@$post = $request->param()['education'];
 		$eduInsertData = [];
 		$teacherId = input('param.teacher_id');
+		$isExamine = (bool) input('param.examine',0);
 		if(empty($post)){
 			return json(['success'=>false,'code'=>'002','message'=>'请上传参数合集后提交']);
 		}
@@ -1649,18 +1667,26 @@ class Teacher extends Base
 				return json(['success'=>false,'code'=>'002','message'=>$vali]);
 			}
 			if(empty($post[$i]['education_id'])){
-				if(!$redis->get2($imgPrefix.$post[$i]['education_photo_no'])){
-					return json(['success'=>false,'code'=>'002','message'=>'学历证明图片已过期，请重新上传！']);
-				}
-				$editData['teacher_id'] = $teacherId;
-				$editData['education_photo'] = $redis->get2($imgPrefix.$post[$i]['education_photo_no']);
-				$editData['create_at'] = $nowTime;
-			}else{
-				if(!empty(@$post[$i]['education_photo_no'])){
-					if(!$redis->get2($imgPrefix.$post[$i]['education_photo_no'])){
+				if(empty(@$post[$i]['education_photo']) && $isExamine){
+					$editData['education_photo'] = $post[$i]['education_photo'];
+				}else{
+					if(!$redis->get2(@$imgPrefix.$post[$i]['education_photo_no'])){
 						return json(['success'=>false,'code'=>'002','message'=>'学历证明图片已过期，请重新上传！']);
 					}
 					$editData['education_photo'] = $redis->get2($imgPrefix.$post[$i]['education_photo_no']);
+				}
+				$editData['teacher_id'] = $teacherId;
+				$editData['create_at'] = $nowTime;
+			}else{
+				if(empty(@$post[$i]['education_photo']) && $isExamine){
+					$editData['education_photo'] = $post[$i]['education_photo'];
+				}else{
+					if(!empty(@$post[$i]['education_photo_no'])){
+						if(!$redis->get2($imgPrefix.$post[$i]['education_photo_no'])){
+							return json(['success'=>false,'code'=>'002','message'=>'学历证明图片已过期，请重新上传！']);
+						}
+						$editData['education_photo'] = $redis->get2($imgPrefix.$post[$i]['education_photo_no']);
+					}
 				}
 				$editData['education_id'] = $post[$i]['education_id'];
 				$editData['update_at'] = $nowTime;
@@ -1676,6 +1702,12 @@ class Teacher extends Base
 		$result = $education->saveAll($eduInsertData);
 		if(!empty($teacherData->uid)){
 			$userfield->where(['uid'=>$teacherData->uid])->update(['content'=>json_encode($this->getContent($teacherData->uid))]);
+		}
+		if($isExamine){
+			// 审核
+			$teacherData->info_status = 2;
+			$teacherData->save();
+			$editlog->where(['teacher_id'=>$teacherId,'status'=>0,'model'=>6])->update(['status'=>1]);
 		}
 		if($result){
 			return json(['success'=>true,'code'=>'000','message'=>'添加成功']);
