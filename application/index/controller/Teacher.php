@@ -1288,7 +1288,10 @@ class Teacher extends Base
 		$request = Request::instance();
 		$post = $request->only(['teacher_name','sex','birthday','enter_date','city','tel','teacher_photo_no','teacher_id']);
 		$adminId = Session::get('admin_id');
+		$teacher = new TeacherModel;
+		$user = new User;
 		$redis = new Redis;
+		$userField = new UserField;
 		$imgPrefix = 'teacher_info_'.$adminId.'_';
 		// 验证参数是否符合规则
 		$vali = $this->validate($post, 'TeacherValidate.info_edit');
@@ -1296,11 +1299,16 @@ class Teacher extends Base
 			return json(['success'=>false,'code'=>'002','message'=>$vali]);
 		}
 		$editData = [];
+		$userTable = [];
+		$userEdit = [];
 		if(!empty($post['teacher_photo_no'])) {
 			if(!$redis->get2($imgPrefix.$post['teacher_photo_no'])){
 				return json(['success'=>false,'code'=>'002','message'=>'上身照图片已过期，请重新上传！']);
 			}
 			$editData['teacher_photo'] = $redis->get2($imgPrefix.$post['teacher_photo_no']);
+			if(!empty($teacherData['uid'])){
+				$userEdit['avatarurl'] = $editData['teacher_photo'];
+			}
 		}
 		$teacher = new TeacherModel;
 		$user = new User;
@@ -1319,7 +1327,13 @@ class Teacher extends Base
 		$editData['city'] = $citys[1];
 		$editData['area'] = $citys[2];
 		$editData['teacher_tel'] = $post['tel'];
+		$userTable['realname'] = $post['teacher_name'];
+		$userEdit['province'] = $citys[0];
+		$userEdit['city'] = $citys[1];
+		$userEdit['area'] = $citys[2];
 		$result = $teacher->editData($post['teacher_id'],$editData);
+		$userField->where(['uid'=>$teacherData['uid']])->update($userTable);
+		$user->where(['id'=>$teacherData['uid']])->update($userEdit);
 		if($result){
 			return json([
 				'success'=>true,
@@ -1642,7 +1656,7 @@ class Teacher extends Base
 				$editData['education_photo'] = $redis->get2($imgPrefix.$post[$i]['education_photo_no']);
 				$editData['create_at'] = $nowTime;
 			}else{
-				if(!empty($post[$i]['education_photo_no'])){
+				if(!empty(@$post[$i]['education_photo_no'])){
 					if(!$redis->get2($imgPrefix.$post[$i]['education_photo_no'])){
 						return json(['success'=>false,'code'=>'002','message'=>'学历证明图片已过期，请重新上传！']);
 					}
