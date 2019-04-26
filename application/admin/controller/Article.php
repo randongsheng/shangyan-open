@@ -243,8 +243,12 @@ class Article extends Common
     public function delArticle(){
         $id = input('post.id');
         db('articles')->where(['id'=>$id])->update(['status'=>7,'update_at'=>time()]);
-        //        删除文章的评论
+//        删除文章的评论
         \db('comment')->where(['articleid'=>$id])->delete();
+//        删除文章浏览记录
+        \db('article_browse_record')->where(['articleid'=>$id])->delete();
+//        删除文章收藏
+        \db('collentiom')->where(['articleid'=>$id])->delete();
         sendJson(1,'删除文章成功');
     }
     //文章上架
