@@ -56,5 +56,5 @@ return [
 	'deoisit'=>1000,
 
 	// 保证金白名单
-	'white_list'=>[37,],
+	'white_list'=>[51,],
 ];
