@@ -38,22 +38,7 @@ class User extends Base
 		if(!empty($post['label_id'])){
 			$userWhere['u.topic'] = ['like','%,'.trim($post['label_id']).',%'];
 		}
-		// 不能同时筛选三个条件（需要些10种不同sql）
-		/*if((isset($post['if_test'])&&$post['if_test']!='')||(isset($post['if_listen'])&&$post['if_listen']!='')||(isset($post['if_consult'])&&$post['if_consult']!='')){
-			$userWhere['u.id'] = ['in',
-			function($query)use($post){
-				if(!empty($post['if_test'])&&$post['if_test']==1){
-					// 是否测试过
-					$query->table('sy_exam_result')->alias('e')->where('e.uid=u.id')->field('uid');
-				}else if(!empty($post['if_listen'])&&$post['if_listen']==1){
-					// 是否倾诉过
-					$query->table('sy_order')->alias('o')->where('o.uid=u.id')->where('o.type',1)->field('uid');
-				}else if(!empty($post['if_consult'])&&$post['if_consult']==1){
-					// 是否咨询过
-					$query->table('sy_order')->alias('o')->where('o.uid=u.id')->where('o.type',2)->field('uid');
-				}
-			}];
-		}*/
+		
 		if(isset($post['if_test'])&&$post['if_test']!=''){
 			if($post['if_test']==0){
 				$w = 'not in';
@@ -141,8 +126,7 @@ class User extends Base
 		->fieldRaw('id,role,status,nickname,mobile,level,regtime,age,gender,avatarurl,'.$examResultSql.' as test_con,'.$listenSql.' as listen_con,'.$consultSql.' as consult_con')
 		->order('u.regtime','desc')
 		->paginate(20);
-		// ->select(false);
-		// print_r($users);die;
+		
 		if($users){
 			return $this->message(['success'=>true,'code'=>'000','message'=>'查询成功','data'=>$users]);
 		}else{

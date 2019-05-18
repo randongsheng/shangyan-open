@@ -130,4 +130,22 @@ class User extends Model
     {
         return date('Y-m-d H:i:s',$value);
     }
+
+    /**
+     * 用户角色
+     */
+    public function getUserRoleAttr($value,$data)
+    {
+        if($data['gender']==1){
+            $roleDe = [1=>'宝爸',2=>'准宝爸',3=>'备孕中'];
+        }else if($data['gender']==2){
+            $roleDe = [1=>'宝妈',2=>'怀孕中',3=>'备孕中'];
+        }else{
+            $roleDe = [];
+        }
+        if(!array_key_exists($value, $roleDe)){
+            return '未知';
+        }
+        return $roleDe[$value];
+    }
 }

@@ -1301,6 +1301,7 @@ class Teacher extends Base
 		$editData = [];
 		$userTable = [];
 		$userEdit = [];
+		$teacherData = $teacher->where(['teacher_id'=>$post['teacher_id']])->find();
 		if(!empty($post['teacher_photo_no'])) {
 			if(!$redis->get2($imgPrefix.$post['teacher_photo_no'])){
 				return json(['success'=>false,'code'=>'002','message'=>'上身照图片已过期，请重新上传！']);

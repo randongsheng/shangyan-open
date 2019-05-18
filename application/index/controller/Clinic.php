@@ -1111,7 +1111,7 @@ class Clinic extends Base
 		$clinic = new ClinicModel;
 		$clinicData = $clinic->get($clinicId);
 		if($clinicData->getData('status')!=-8){
-			return json(['success'=>false,'code'=>'012','message'=>'您当前状态不可也无需执行此操作']);
+			return json(['success'=>false,'code'=>'012','message'=>'您当前状态不可执行此操作']);
 		}
 		if(!array_key_exists($action, $statusDe)){
 			return json(['success'=>false,'code'=>'012','message'=>'没有预定义的参数']);
