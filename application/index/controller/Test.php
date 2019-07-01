@@ -15,7 +15,7 @@ class Test extends Base
 
     public function index()
     {
-        echo  '测试成功';
+        echo  '测试成功,继续测试ssh';
 
     }
 
