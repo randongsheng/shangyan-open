@@ -5,7 +5,12 @@ use think\Db;
 use app\admin\controller;
 class Article extends Common
 {
-	public function articleList(){
+
+
+
+
+
+    public function articleList(){
 		$data = input('post.');
 		$where = [];
     	// $where['type'] = 1;

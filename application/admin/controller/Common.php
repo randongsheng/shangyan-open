@@ -2,22 +2,39 @@
 namespace app\admin\controller;
 use think\Db;
 use think\Controller;
+use think\Env;
 class common extends Controller
 {
 	public function _initialize()
     {
         //权限管理,做好添加再打开
         // 检查缓存
-        $this->cacheCheck();
+      $super_shang=$this->cacheCheck();
 
         // 检测权限
         $control = lcfirst(request()->controller());
         $action = lcfirst(request()->action());
 
-        if(empty(authCheck($control . '/' . $action))){
-            sendJson(-1,'没有权限');
-        }
+
+            //如果是超级管理员  则通过
+
+            if($super_shang!=Env::get('rule_super.rule_shang')){
+
+
+//           if(empty(authCheck($control . '/' . $action))){
+//            sendJson(-1,'没有权限');
+//        }
+            }
+
+
+
+
     }
+
+
+
+
+
     private function cacheCheck()
     {
         $action = session('role_id');
@@ -29,7 +46,8 @@ class common extends Controller
             // 获取该管理员的角色信息
 //            $role_id = session('role_id');
             $info = db('role')->where(['id'=>$action])->value('rule');
-            //echo db('role')->getLastSql();
+
+
 //            var_dump($info) ;
 //            die;
             // 超级管理员权限是 *
@@ -37,7 +55,19 @@ class common extends Controller
                 $result['action'] = '';
                 return $result;
             }else if('*' == $info){
-                $where = '';
+
+                 //判断是否修改env文件,如此事发生则 为总管理员信息篡改,紧急形态
+                if(session('rule_shang')==Env::get('rule_super.rule_shang')) {
+
+                    session('rule_shang', Env::get('rule_super.rule_shang'));
+                    return Env::get('rule_super.rule_shang');
+                }
+                else{
+                    //警示:如果返回信息!!!得到则为篡改紧急状态
+                    sendJson('!!!','你的非法攻击以及篡改以及被我方追踪,将受到法律严惩！');
+
+                }
+
             }else{
                 $where = 'id in(' . $info . ')';
             }
@@ -50,7 +80,7 @@ class common extends Controller
                     $result['action'][] = $vo['control_name'] . '/' . $vo['action_name'];
                 }
             }
-            session('rule', $result['action']);
+            session('rule_shang', $result['action']);
         }
     }
 	//倾听/咨询订单状态判断

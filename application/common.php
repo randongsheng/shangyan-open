@@ -51,21 +51,22 @@ function authCheck($rule)
 {
     $control = explode('/', $rule)['0'];
     //如果允许login与index不需要权限控制,写在这里
-    if(in_array($control, ['login', 'index','auth'])){
+    if(in_array($control, ['login'])){
         return true;
     }
-    $control_name = explode('/', $rule)['0'];
+    $control_name = $control;
     $action_name = explode('/', $rule)['1'];
-    //判断节点中是否有这个节点,如果节点表中没有,则全部通过
-//    var_dump($rule);
-//    var_dump(session('rule'));
-//    var_dump(in_array($rule, session('rule')));
+
+      //如果没有权限名称则返回false
     $is_have = db('node')->where(['control_name'=>$control_name,'action_name'=>$action_name])->find();
     if (!$is_have){
-        return true;
+        return false;
     }
 
-    if(in_array($rule, (array)session('rule'))){
+
+
+    if(in_array($rule, session('rule_shang'))){
+
         return true;
     }
 
@@ -105,8 +106,8 @@ function bankInfo($card) {
 }
 
 /**
- * @param  $birthday 出生时间 uninx时间戳
- * @param  $time 当前时间
+ * @param $birthday 出生时间 uninx时间戳
+ * @param $time 当前时间
  */
 function get_age($birthday) {
     $birthday = strtotime($birthday);

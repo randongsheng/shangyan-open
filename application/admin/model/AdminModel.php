@@ -17,7 +17,16 @@ use think\Model;
  */
 class AdminModel extends Model
 {
-	protected $pk = 'admin_id';
+//	protected $pk = 'admin_id';
 	// 设置当前模型对应的完整数据表名称
     protected $table = 'sy_admin';
+
+
+    public function getCreateAtAttr($value)
+    {
+
+        return date('Y-m-d H:i:s',$value);
+
+    }
+
 }

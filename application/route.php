@@ -176,6 +176,7 @@ Route::rule('/teacher/label/edit','index/Teacher/labelEdit','POST');
 // 修改老师咨询价格
 Route::rule('/teacher/price/edit','index/Teacher/editConsult','POST');
 
+
 return [
     '__pattern__' => [
         'name' => '\w+',
