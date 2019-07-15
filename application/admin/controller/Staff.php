@@ -12,6 +12,7 @@ use app\admin\model\CouponsModel;
 use app\admin\model\CourseEditModel;
 use app\admin\model\CourseListModel;
 use app\admin\model\CourseModel;
+use app\admin\model\EveEditModel;
 use app\admin\model\EveModel;
 use app\admin\model\NoticeModel;
 use think\Controller;
@@ -414,6 +415,11 @@ class Staff extends Common
         $everyThree=EveModel::where($where)->limit($num)->order('create_at','desc')->select();
         $everyThreeNumber=!empty($everyThree)?count($everyThree):0;
 
+        //每日三分钟改动待审核
+
+        $everyThree_edit=EveEditModel::where($where)->limit($num)->order('create_at','desc')->select();
+        $everyThree_editNumber=!empty($everyThree_edit)?count($everyThree_edit):0;
+
         //机构审核
 
         $jigou=AdminModel::where($where)->limit($num)->order('create_at','desc')->select();
@@ -438,11 +444,11 @@ class Staff extends Common
 
            //各个审核数量
         $eveNumber=array('articleNum'=>$articleNumber,'courseNum'=>$courseNumber,'eveNumber'=>$everyThreeNumber,'jigouNumber'=>$jigouNumber,
-            'couponsNumber'=>$couponsNumber,'noticeNumber'=>$noticeNumber,'course_editNumber'=>$courses_editNumber);
+            'couponsNumber'=>$couponsNumber,'noticeNumber'=>$noticeNumber,'course_editNumber'=>$courses_editNumber,'everyThree_editNumber'=>$everyThree_editNumber);
 
         //各个审核数据
 
-        $eveData=array('article'=>$articles,'course'=>$courses,'eve'=>$everyThree,'jigou'=>$jigou,'coupons'=>$coupons,'notice'=>$notice,'course_edit'=>$courses_edit);
+        $eveData=array('article'=>$articles,'course'=>$courses,'eve'=>$everyThree,'jigou'=>$jigou,'coupons'=>$coupons,'notice'=>$notice,'course_edit'=>$courses_edit,'everyThree_edit'=>$everyThree_edit);
 
             return json(['code'=>'000','message'=>'成功!','data'=>array('num'=>$eveNumber,'data'=>$eveData)]);
 
@@ -469,7 +475,8 @@ class Staff extends Common
 
 
 
-        if(empty($param['couponId'])&&empty($param['articleId'])&&empty($param['courseId'])&&empty($param['eveId'])&&empty($param['jigouId'])&&empty($param['noticeId'])&&empty($param['course_editid'])){
+        if(empty($param['couponId'])&&empty($param['articleId'])&&empty($param['courseId'])&&empty($param['eveId'])
+            &&empty($param['jigouId'])&&empty($param['noticeId'])&&empty($param['course_edit_id'])&&empty($param['eve_edit_id'])){
             return json(['code'=>'002','message'=>'缺少参数!','data'=>array()]);
         }
 
@@ -522,11 +529,11 @@ class Staff extends Common
 
 
         //课程改动
-        elseif(!empty($param['course_editid'])){
+        elseif(!empty($param['course_edit_id'])){
 
 
 
-            return json( $this->exCourseEdit($param['course_editid'],$examine,$content,'课程内容修改'));//ID->状态->审核内容->关键字段
+            return json( $this->exCourseEdit($param['course_edit_id'],$examine,$content,'课程内容修改'));//ID->状态->审核内容->关键字段
 
 
         }
@@ -538,6 +545,16 @@ class Staff extends Common
 
 
             return json( $this->exCurr('eve',$param['eveId'],$examine,$content,'title','每日三分钟'));//表名->ID->状态->审核内容->关键字段
+
+
+        }
+
+        //每日三分钟改动审核
+        elseif(!empty($param['eve_edit_id'])){
+
+
+
+            return json( $this->exEveEdit($param['eve_edit_id'],$examine,$content,'每日三分钟内容修改'));//ID->状态->审核内容->关键字段
 
 
         }
@@ -719,13 +736,16 @@ class Staff extends Common
             return ['code'=>'006','message'=>'数据出错!','data'=>array()];
         }
 
+          //课程信息
+          $couInfo=CourseModel::where('id',$noticeInfo['course_id'])->find();
 
 
         $result= CourseEditModel::where('id',$id)->update(['examine'=>$examine]);
 
+
         if($result){
             if($examine==1){//审核成功
-                $content=!empty($content)?$content:'请查收!'.$tishi.':'.$noticeInfo['title'].'.审核成功!';//如果回复内容为空,自定义回复
+                $content=!empty($content)?$content:'请查收!'.$tishi.':'.$couInfo['title'].'.审核成功!';//如果回复内容为空,自定义回复
 
                 //去处理更新操作
                 if($noticeInfo['edit_course']!=''){//课程更新
@@ -735,8 +755,9 @@ class Staff extends Common
                     }
 
                 }
+
                 if($noticeInfo['edit_course_list']!=''){//课时修改
-                    $editList=json_decode($noticeInfo['edit_course'],true);
+                    $editList=json_decode($noticeInfo['edit_course_list'],true);
 
                     foreach ($editList as $k=>$v){
                         $mid=$v['id'];
@@ -748,10 +769,11 @@ class Staff extends Common
 
                 }
                 if($noticeInfo['add_course_list']!=''){//课时增加
-                    $addList=json_decode($noticeInfo['edit_course'],true);
+                    $addList=json_decode($noticeInfo['add_course_list'],true);
 
                     foreach ($addList as $ki=>$vi){
-
+                             $vi['course_id']=$noticeInfo['course_id'];
+                             $vi['create_at']=time();
                         if(!CourseListModel::insert($vi)){
                             return ['code'=>'006','message'=>'审核成功,课时增加失败!','data'=>array()];
                         }
@@ -761,7 +783,7 @@ class Staff extends Common
                 }
 
             }else{
-                $content=!empty($content)?$content:'请查收!'.$tishi.':'.$noticeInfo['title'].'.审核被驳回!';//如果回复内容为空,自定义回复
+                $content=!empty($content)?$content:'请查收!'.$tishi.':'.$couInfo['title'].'.审核被驳回!';//如果回复内容为空,自定义回复
             }
 
             //send_id=* 为超级管理员发送 ..发送站内信通知审核情况
@@ -783,6 +805,62 @@ class Staff extends Common
 
 
 
+
+    //每日三分钟修改审核
+    private function exEveEdit($iid,$ex,$con,$ti){
+
+
+        $id=$iid;//ID
+        $examine=$ex;//审核状态
+        $content=$con;//审核内容
+        $tishi=$ti;//提示信息前缀
+
+        $noticeInfo=EveEditModel::where('id',$id)->find();//查询的信息
+
+        if(!$noticeInfo){
+            return ['code'=>'006','message'=>'数据出错!','data'=>array()];
+        }
+
+        //每日三分钟信息
+        $couInfo=EveModel::where('id',$noticeInfo['eve_id'])->find();
+
+
+        $result= EveEditModel::where('id',$id)->update(['examine'=>$examine]);
+
+
+        if($result){
+            if($examine==1){//审核成功
+                $content=!empty($content)?$content:'请查收!'.$tishi.':'.$couInfo['title'].'.审核成功!';//如果回复内容为空,自定义回复
+
+                //去处理更新操作
+                if($noticeInfo['edit_eve']!=''){//课程更新
+                    $upCour=json_decode($noticeInfo['edit_eve'],true);
+                    if(!EveModel::where('id',$noticeInfo['eve_id'])->update($upCour)){
+                        return ['code'=>'006','message'=>'审核成功,课程修改失败!','data'=>array()];
+                    }
+
+                }
+
+            }else{
+                $content=!empty($content)?$content:'请查收!'.$tishi.':'.$couInfo['title'].'.审核被驳回!';//如果回复内容为空,自定义回复
+            }
+
+            //send_id=* 为超级管理员发送 ..发送站内信通知审核情况
+            if(\db('self_mail')->insert(array('send_id'=>'*','rece_id'=>$noticeInfo['ad_id'],'content'=>$content,'create_at'=>time()))){
+
+
+                return ['code'=>'000','message'=>'审核成功!','data'=>array()];
+            }
+            else{
+                return ['code'=>'006','message'=>'站内信发送失败!','data'=>array()];
+            }
+
+        }
+        else{
+            return ['code'=>'006','message'=>'审核出错!','data'=>array()];
+        }
+
+    }
 
 
 

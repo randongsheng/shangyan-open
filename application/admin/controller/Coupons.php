@@ -17,17 +17,22 @@ class Coupons extends Common
 
 
     //所有劵
-    public function couponsList()
+        public function couponsList()
     {
 
-
+        $request=Request::instance();
+        $page=$request->post('page',1);
+        $limit=$request->post('limit',10);
+        $couponType=$request->post('couponType',null);
+        $validEndTime=$request->post('validEndTime',null);
 
            //查询条件
         $where=array();
         $where['flag']=1;
         $where['examine']=1;
-        if(!empty($_POST['couponType'])){
-            $where['couponType']=$_POST['couponType'];
+
+        if(!empty($couponType)){
+            $where['couponType']=$couponType;
         }
 
         //判断是否为机构的劵
@@ -37,13 +42,13 @@ class Coupons extends Common
 
         //已过期
 
-        if(!empty($_POST['validEndTime'])){
+        if(!empty($validEndTime)){
 
-            $where['validEndTime']=array('lt',$_POST['validEndTime']);
+            $where['validEndTime']=array('lt',$validEndTime);
         }
 
 
-        $data= CouponsModel::where($where)->order('create_at','desc')->select();
+        $data= CouponsModel::where($where)->order('create_at','desc')->page($page,$limit)->select();
 
 
         if($data){

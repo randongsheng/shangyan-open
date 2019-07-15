@@ -12,16 +12,14 @@ namespace app\admin\model;
 
 use think\Model;
 use app\admin\model\BaseModel;
-class CouponsModel extends BaseModel
+class EveEditModel extends BaseModel
 {
    // 确定链接表名
-    protected $name = 'coupons';
+    protected $name = 'eve_edit_log';
 
     public function getCreateAtAttr($value)
     {
 
         return date('Y-m-d H:i:s',$value);
     }
-
-
 }

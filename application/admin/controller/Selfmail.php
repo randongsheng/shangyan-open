@@ -23,8 +23,12 @@ class Selfmail extends Common
     public function mailList()
     {
 
+        $request=Request::instance();
+        $page=$request->post('page',1);
+        $limit=$request->post('limit',10);
+        $id=$request->post('id',null);
 
-          if(empty($_POST['id'])){
+          if(empty($id)){
               return json(['code'=>'002','message'=>'缺少参数','data'=>array()]);
           }
 
@@ -32,7 +36,7 @@ class Selfmail extends Common
         $where=array();
         $where['flag']=1;
         $where['examine']=1;
-        $where['admin_id']=($_POST['id']);
+        $where['admin_id']=$id;
 
 
         $ad= db('admin')->field('name')->where($where)->find();
@@ -40,10 +44,10 @@ class Selfmail extends Common
 
         if($ad){
             if(session('rule_shang')!=Env::get('rule_super.rule_shang')) {
-                $data = SelfmailModel::where('rece_id', $_POST['id'])->order('create_at', 'desc')->select();
+                $data = SelfmailModel::where('rece_id', $id)->page($page,$limit)->order('create_at', 'desc')->select();
             }
             else{
-                $data = SelfmailModel::where('rece_id', '*')->order('create_at', 'desc')->select();//超级管理员ID  为*保护
+                $data = SelfmailModel::where('rece_id', '*')->page($page,$limit)->order('create_at', 'desc')->select();//超级管理员ID  为*保护
             }
                   if($data){
                       return json(['code'=>'000','message'=>'成功','data'=>$data]);
