@@ -123,6 +123,9 @@ class Course extends Common
 
                 DB::commit();
 
+                   //添加操作日志
+                  $this->add_log($getId,'添加课程:'.$param['title'],$param['ad_id']);
+
                return json(['code'=>'000','message'=>'成功','data'=>array()]);
            }
 
@@ -180,7 +183,8 @@ class Course extends Common
 
                 return json( ['code'=>'006','message'=>'站内信发送失败!','data'=>array()]);
             }
-
+            //添加操作日志
+            $this->add_log($param['id'],'课程提交审核:'.$courseInfo['title'], session('admin_id'));
             return json(['code'=>'000','message'=>'成功!','data'=>array()]);
         }
         else{
@@ -227,8 +231,11 @@ class Course extends Common
 
 
         if($courseInfo['examine']==1||$courseInfo['examine']==6){
+            //添加操作日志
+            $this->add_log($param['id'],'课程上架:'.$courseInfo['title'], session('admin_id'));
               $result=CourseModel::where($where)->update(['examine'=>5]);
         }elseif ($courseInfo['examine']==5){
+            $this->add_log($param['id'],'课程下架:'.$courseInfo['title'], session('admin_id'));
             $result=CourseModel::where($where)->update(['examine'=>6]);
         }
         else{
@@ -303,7 +310,7 @@ class Course extends Common
                 }
 
 
-
+                $this->add_log($param['course_id'],'课程编辑:'.$courseInfo['title'], $param['ad_id']);
                 return json(['code'=>'000','message'=>'成功','data'=>array()]);
             }
 

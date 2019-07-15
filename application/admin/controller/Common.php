@@ -1,5 +1,6 @@
 <?php
 namespace app\admin\controller;
+use app\admin\model\OperationLogModel;
 use think\Db;
 use think\Controller;
 use think\Env;
@@ -115,5 +116,15 @@ class common extends Controller
     		$str = implode("#", $topicarr);
     		return $str;
 	}
+
+	//添加操作日志
+
+    public function add_log($tid,$con,$aid)
+    {
+
+
+       OperationLogModel::insert(array('target_id'=>$tid,'content'=>$con,'ad_id'=>$aid,'create_at'=>time()));
+
+    }
 	
 }
