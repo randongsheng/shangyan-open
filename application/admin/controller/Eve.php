@@ -29,7 +29,7 @@ class Eve extends Common
     {
 
         $request=Request::instance();
-        $page=$request->post('page',1);
+//        $page=$request->post('page',1);
         $limit=$request->post('limit',10);
         $keyWord=$request->post('keyWord',null);
 
@@ -46,7 +46,7 @@ class Eve extends Common
             $where['ad_id']=session('admin_id');
         }
 
-        $data= EveModel::where($where)->order('create_at','desc')->page($page,$limit)->select();
+        $data= EveModel::where($where)->order('create_at','desc')->paginate($limit);
 
 
         if($data){

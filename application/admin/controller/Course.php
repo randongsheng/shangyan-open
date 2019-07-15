@@ -24,7 +24,7 @@ class Course extends Common
 
 
         $request=Request::instance();
-        $page=$request->post('page',1);
+//        $page=$request->post('page',1);
         $limit=$request->post('limit',10);
         $keyWord=$request->post('keyWord',null);
 
@@ -44,7 +44,8 @@ class Course extends Common
 
 
 
-        $data= CourseModel::where($where)->order('create_at','desc')->page($page,$limit)->select();
+
+        $data= CourseModel::where($where)->order('create_at','desc')->paginate($limit);
 
 
         if($data){

@@ -24,7 +24,7 @@ class Selfmail extends Common
     {
 
         $request=Request::instance();
-        $page=$request->post('page',1);
+//        $page=$request->post('page',1);
         $limit=$request->post('limit',10);
         $id=$request->post('id',null);
 
@@ -44,10 +44,10 @@ class Selfmail extends Common
 
         if($ad){
             if(session('rule_shang')!=Env::get('rule_super.rule_shang')) {
-                $data = SelfmailModel::where('rece_id', $id)->page($page,$limit)->order('create_at', 'desc')->select();
+                $data = SelfmailModel::where('rece_id', $id)->order('create_at', 'desc')->paginate($limit);
             }
             else{
-                $data = SelfmailModel::where('rece_id', '*')->page($page,$limit)->order('create_at', 'desc')->select();//超级管理员ID  为*保护
+                $data = SelfmailModel::where('rece_id', '*')->order('create_at', 'desc')->paginate($limit);//超级管理员ID  为*保护
             }
                   if($data){
                       return json(['code'=>'000','message'=>'成功','data'=>$data]);

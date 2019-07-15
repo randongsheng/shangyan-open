@@ -21,7 +21,7 @@ class Coupons extends Common
     {
 
         $request=Request::instance();
-        $page=$request->post('page',1);
+//        $page=$request->post('page',1);
         $limit=$request->post('limit',10);
         $couponType=$request->post('couponType',null);
         $validEndTime=$request->post('validEndTime',null);
@@ -48,7 +48,10 @@ class Coupons extends Common
         }
 
 
-        $data= CouponsModel::where($where)->order('create_at','desc')->page($page,$limit)->select();
+
+
+        $data= CouponsModel::where($where)->order('create_at','desc')->paginate($limit);
+
 
 
         if($data){
