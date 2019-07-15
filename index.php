@@ -9,6 +9,7 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
+echo phpinfo();die;
 // 跨域资源共享
 $ori = empty($_SERVER['HTTP_ORIGIN'])?'*':$_SERVER['HTTP_ORIGIN'];
 header('Access-Control-Allow-Origin: '.$ori);
