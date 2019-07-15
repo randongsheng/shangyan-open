@@ -64,11 +64,14 @@ function authCheck($rule)
     }
 
 
+          if(is_array(session('rule_shang'))) {
 
-    if(in_array($rule, session('rule_shang'))){
+              if (in_array($rule, session('rule_shang'))) {
 
-        return true;
-    }
+                  return true;
+              }
+
+          }
 
     return false;
 }
