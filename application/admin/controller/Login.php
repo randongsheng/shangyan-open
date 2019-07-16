@@ -29,9 +29,13 @@ class Login
 
 		$acount = db('admin')->where($where)->field('tel,password,admin_id,name,role_id,secret,flag,examine')->find();
 
+
+		   if($acount&&$acount['examine']!=1){//待审核的状态
+               return json(['code'=>'006','message'=>'账号待审核通过！','data'=>array()]);
+           }
+
 		if(!$acount || $acount['password']!=md5($post['password'].$acount['secret'])||$acount['flag']!=1){
-			sendJson(-1,'账号或密码不正确');
-//            return json(['code'=>'006','message'=>'账号或密码不正确！','data'=>array()]);
+            return json(['code'=>'006','message'=>'账号或密码不正确！','data'=>array()]);
 		}
 
 
@@ -89,6 +93,10 @@ class Login
         session_destroy();
         return json(['code'=>'000','message'=>'成功!','data'=>array()]);
 	}
+
+
+
+
 
 	/**
 	 * 写入session

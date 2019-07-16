@@ -87,7 +87,7 @@ class Eve extends Common
             $param['create_at']=time();
 
 
-           if($getId=EveModel::insert($param))
+           if($getId=EveModel::insertGetId($param))
 
            {
 

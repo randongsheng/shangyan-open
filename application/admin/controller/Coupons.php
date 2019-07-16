@@ -97,7 +97,7 @@ class Coupons extends Common
 
             $param['url']= $request->domain().'/index/coupons/register';
 
-           if($getId=CouponsModel::insert($param))
+           if($getId=CouponsModel::insertGetId($param))
            {
 
                    $content='审核消息!优惠券:'.$param['couponName'].'请审核!';//如果回复内容为空,自定义回复

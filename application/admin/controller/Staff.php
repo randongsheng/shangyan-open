@@ -72,14 +72,14 @@ class Staff extends Common
         //判断账号是否重复
           $where=array();
            $where['tel']=$param['tel'];
-           if(!empty($param['email'])){
-               $where['email']=$param['email'];
-           }
+//           if(!empty($param['email'])){
+//               $where['email']=$param['email'];
+//           }
 
 
-        if(\db('admin')->whereOr($where)->find()){
+        if(\db('admin')->where($where)->find()){
 
-            return json(['code'=>'006','message'=>'邮箱或者账号已存在!','data'=>array()]);
+            return json(['code'=>'006','message'=>'账号已存在!','data'=>array()]);
         }
 
 
@@ -87,10 +87,11 @@ class Staff extends Common
             $param["secret"] = rand(1000,9999);
             $param['password']=md5('123456'.$param["secret"]);
             $param['examine']=1;//超级管理员添加的用户直接审核通过
+            $param['ad_id']=session('admin_id');
 
             $param['create_at']=time();
 
-            $getId=AdminModel::insert($param);
+            $getId=AdminModel::insertGetId($param);
 
             $this->add_log($getId,'添加用户:'.$param['name'], session('admin_id'));
             return json(['code'=>'000','message'=>'成功','data'=>array()]);
@@ -102,6 +103,77 @@ class Staff extends Common
 
         }
     }
+
+
+    /**
+     * 添加机构
+
+     * ];
+     */
+    public function addJigou( ){
+        $param=input('post.');
+
+
+
+        if(empty($param['name'])||empty($param['tel'])){
+            return json(['code'=>'002','message'=>'缺少参数','data'=>array()]);
+        }
+
+
+        //判断账号是否重复
+        $where=array();
+        $where['tel']=$param['tel'];
+
+
+        if(\db('admin')->where($where)->find()){
+
+            return json(['code'=>'006','message'=>'账号已存在!','data'=>array()]);
+        }
+
+
+        try{
+            $secret = rand(1000,9999);
+            $password=md5('123456'.$secret);
+
+
+            $info=array(//添加后台用户主表信息
+                'name'=>$param['name'],
+                'tel'=>$param['tel'],
+                'role_id'=>Env::get('jigou.jigou'),
+                'secret'=>$secret,
+                'password'=>$password,
+                'examine'=>2,
+                'ad_id'=>session('admin_id'),
+                'create_at'=>time()
+
+                );
+            $getId=AdminModel::insertGetId($info);
+               $jigouName=$param['name'];//新增的名称
+            unset($param['name'],$param['tel']);//去除多余的
+            $param['relate_id']=$getId;
+
+            \db('admin_jigou')->insert($param);//添加附表
+
+            $content='新添机构:'.$jigouName.'请审核!';//如果回复内容为空,自定义回复
+
+            //rece_id=* 为超级管理员接收 ..发送站内信通知审核情况
+            if(!\db('self_mail')->insert(array('send_id'=>session('admin_id'),'rece_id'=>'*','content'=>$content,'create_at'=>time()))){
+
+
+                return json( ['code'=>'006','message'=>'站内信发送失败!','data'=>array()]);
+            }
+
+            $this->add_log($getId,'添加机构待审核:'.$jigouName, session('admin_id'));
+            return json(['code'=>'000','message'=>'成功','data'=>array()]);
+
+
+
+        }catch(\PDOException $e){
+            return json(['code'=>'006','message'=>'失败','data'=>array()]);
+
+        }
+    }
+
 
     /**
      * 编辑用户
@@ -122,7 +194,7 @@ class Staff extends Common
         }
 
         //判断是否非法操作
-        if(isset($param['tel'])||isset($param['email'])){
+        if(isset($param['tel'])){
             return json(['code'=>'006','message'=>'非法操作!','data'=>array()]);
         }
 
@@ -211,7 +283,7 @@ class Staff extends Common
           }
 
         //判断是否非法操作
-        if(!empty($param['tel'])||!empty($param['email'])||!empty($param['role_id'])||!empty($param['job_number'])||!empty($param['group'])){
+        if(!empty($param['tel'])||!empty($param['role_id'])||!empty($param['group'])){
             return json(['code'=>'006','message'=>'非法操作!','data'=>array()]);
         }
 
@@ -645,7 +717,8 @@ class Staff extends Common
 
 
                     if($noticeInfo['type']==4&&$examine==1){//如果是面向后台公告,站内信形式 继续发送其他用户
-                        $no_where['role_id']='8';//固定机构权限ID
+                        $no_where['role_id']=Env::get('jigou.jigou');//固定机构权限ID
+                        $no_where['flag']=1;
                       $ad_list=\db('admin')->where($no_where)->select();
                       foreach ($ad_list as $k=>$v){
                          if( !\db('self_mail')->insert(array('send_id'=>'*','rece_id'=>$v['admin_id'],'content'=>$noticeInfo['content'],'create_at'=>time()))){
