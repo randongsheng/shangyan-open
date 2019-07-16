@@ -83,8 +83,9 @@ class Login
 	/**
 	 * 退出
 	 */
-	public function adminRegster()
+	public function adminOut()
 	{
+        session_start();
         session_destroy();
         return json(['code'=>'000','message'=>'成功!','data'=>array()]);
 	}
