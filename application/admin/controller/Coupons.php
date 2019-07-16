@@ -97,7 +97,7 @@ class Coupons extends Common
 
             $param['url']= $request->domain().'/index/coupons/register';
 
-           if(\db('coupons')->insert($param))
+           if($getId=CouponsModel::insert($param))
            {
 
                    $content='审核消息!优惠券:'.$param['couponName'].'请审核!';//如果回复内容为空,自定义回复
@@ -108,7 +108,8 @@ class Coupons extends Common
 
                    return json( ['code'=>'006','message'=>'站内信发送失败!','data'=>array()]);
                }
-
+               //添加操作日志
+               $this->add_log($getId,'添加优惠券:'.$param['couponName'],$param['ad_id']);
                return json(['code'=>'000','message'=>'成功','data'=>array()]);
            }
 
@@ -146,12 +147,17 @@ class Coupons extends Common
             $where['ad_id']=session('admin_id');
         }
 
+          $couponsInfo=CouponsModel::where($where)->find();
+
+        if(!$couponsInfo){
+            return json(['code'=>'006','message'=>'错误的优惠券!','data'=>array()]);
+        }
 
 
 
-
-        if(\db('coupons')->where($where)->update(['flag'=>2])){
-
+        if(CouponsModel::where($where)->update(['flag'=>2])){
+                //添加操作日志
+            $this->add_log($param['couponId'],'停止发放优惠券:'.$couponsInfo['couponName'],session('admin_id'));
             return json(['code'=>'000','message'=>'成功!','data'=>array()]);
         }
         else{

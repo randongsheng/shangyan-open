@@ -90,9 +90,9 @@ class Staff extends Common
 
             $param['create_at']=time();
 
-            \db('admin')->insert($param);
+            $getId=AdminModel::insert($param);
 
-
+            $this->add_log($getId,'添加用户:'.$param['name'], session('admin_id'));
             return json(['code'=>'000','message'=>'成功','data'=>array()]);
 
 
@@ -120,13 +120,15 @@ class Staff extends Common
         if(empty($param['admin_id'])){
             return json(['code'=>'002','message'=>'缺少参数!','data'=>array()]);
         }
+
         //判断是否非法操作
-        if(!empty($param['tel'])||!empty($param['email'])){
+        if(isset($param['tel'])||isset($param['email'])){
             return json(['code'=>'006','message'=>'非法操作!','data'=>array()]);
         }
 
         //是否有用户
-         $secret= \db('admin')->where('admin_id',$param['admin_id'])->value('secret');
+         $secret= \db('admin')->field('admin_id,name')->where('admin_id',$param['admin_id'])->find();
+
            if(!$secret){
                return json(['code'=>'006','message'=>'非法操作!','data'=>array()]);
            }
@@ -135,14 +137,11 @@ class Staff extends Common
 
            unset($param['admin_id']);
 
-           //修改密码
-           if(!empty($param['password'])){
-               $param['password']=md5($param['password'].$secret);
-           }
+
 
 
         if(\db('admin')->where('admin_id',$admin_id)->update($param)){
-
+            $this->add_log($admin_id,'修改后台用户:'.$secret['name'], session('admin_id'));
             return json(['code'=>'000','message'=>'成功!','data'=>array()]);
         }
         else{

@@ -87,7 +87,7 @@ class Eve extends Common
             $param['create_at']=time();
 
 
-           if(EveModel::insert($param))
+           if($getId=EveModel::insert($param))
 
            {
 
@@ -103,7 +103,8 @@ class Eve extends Common
                 }
 
 
-
+               //添加操作日志
+               $this->add_log($getId,'添加每日三分钟:'.$param['title'],$param['ad_id']);
                return json(['code'=>'000','message'=>'成功','data'=>array()]);
            }
 
@@ -161,7 +162,8 @@ class Eve extends Common
 
                 return json( ['code'=>'006','message'=>'站内信发送失败!','data'=>array()]);
             }
-
+            //添加操作日志
+            $this->add_log($param['id'],'提交审核,每日三分钟:'.$courseInfo['title'],session('admin_id'));
             return json(['code'=>'000','message'=>'成功!','data'=>array()]);
         }
         else{
@@ -209,8 +211,12 @@ class Eve extends Common
 
         if($courseInfo['examine']==1||$courseInfo['examine']==6){
               $result=EveModel::where($where)->update(['examine'=>5]);
+            //添加操作日志
+            $this->add_log($param['id'],'上架,每日三分钟:'.$courseInfo['title'],session('admin_id'));
         }elseif ($courseInfo['examine']==5){
             $result=EveModel::where($where)->update(['examine'=>6]);
+            //添加操作日志
+            $this->add_log($param['id'],'下架,每日三分钟:'.$courseInfo['title'],session('admin_id'));
         }
         else{
             return json(['code'=>'006','message'=>'错误的课程状态!','data'=>array()]);
@@ -281,7 +287,8 @@ class Eve extends Common
                 }
 
 
-
+                //添加操作日志
+                $this->add_log($param['eve_id'],'提交编辑,每日三分钟:'.$courseInfo['title'],session('admin_id'));
                 return json(['code'=>'000','message'=>'成功','data'=>array()]);
             }
 

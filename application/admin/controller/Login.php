@@ -27,7 +27,7 @@ class Login
         $where['examine']=1;//审核必须通过
         $where['flag']=1;
 
-		$acount = db('admin')->where($where)->field('tel,password,admin_id,role_id,secret,flag,examine')->find();
+		$acount = db('admin')->where($where)->field('tel,password,admin_id,name,role_id,secret,flag,examine')->find();
 
 		if(!$acount || $acount['password']!=md5($post['password'].$acount['secret'])||$acount['flag']!=1){
 			sendJson(-1,'账号或密码不正确');
@@ -48,8 +48,8 @@ class Login
             session('role_id',$acount['role_id']);
             session('rule_shang', Env::get('rule_super.rule_shang'));
 
-            sendJson(1,'登陆成功',['admin_id'=>$acount['admin_id'],'admin_tel'=>$acount['tel'],'role'=>'*']);
-//            return json(['code'=>'000','message'=>'欢迎超级管理员！','data'=>array('admin_id'=>$acount['admin_id'],'admin_tel'=>$acount['tel'],'role'=>'admin')]);
+//            sendJson(1,'登陆成功',['admin_id'=>$acount['admin_id'],'admin_tel'=>$acount['tel'],'role'=>'*','name'=>$acount['name']]);
+            return json(['code'=>'000','message'=>'欢迎超级管理员！','data'=>array('name'=>$acount['name'],'role'=>'*')]);
 
         }else{
 
@@ -68,7 +68,8 @@ class Login
                 }
             }
 
-            sendJson(1,'登陆成功',['admin_id'=>$acount['admin_id'],'admin_tel'=>$acount['tel'],'role'=>$res]);
+//            sendJson(1,'登陆成功',['admin_id'=>$acount['admin_id'],'admin_tel'=>$acount['tel'],'role'=>$res]);
+            return json(['code'=>'000','message'=>'成功!','data'=>array('name'=>$acount['name'],'role'=>$res)]);
 //                      return json(['code'=>'000','message'=>'欢迎超级管理员！','data'=>array('admin_id'=>$acount['admin_id'],'admin_tel'=>$acount['tel'],'role'=>$res)]);
         }
 
@@ -80,11 +81,12 @@ class Login
 
 
 	/**
-	 * 添加管理员
+	 * 退出
 	 */
 	public function adminRegster()
 	{
-		// $request = Request::instance();
+        session_destroy();
+        return json(['code'=>'000','message'=>'成功!','data'=>array()]);
 	}
 
 	/**
