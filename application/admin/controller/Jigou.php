@@ -6,6 +6,7 @@
  * Time: 14:16
  */
 namespace app\admin\controller;
+use app\admin\model\AdminJigouModel;
 use app\admin\model\AdminModel;
 use app\admin\model\ArticleModel;
 use app\admin\model\CouponsModel;
@@ -15,6 +16,7 @@ use app\admin\model\CourseModel;
 use app\admin\model\EveEditModel;
 use app\admin\model\EveModel;
 use app\admin\model\NoticeModel;
+use app\admin\model\SelfmailModel;
 use think\Controller;
 use think\Db;
 use think\Request;
@@ -77,7 +79,7 @@ class Jigou extends Common
         $where['tel']=$param['tel'];
 
 
-        if(\db('admin')->where($where)->find()){
+        if(AdminModel::where($where)->find()){
 
             return json(['code'=>'006','message'=>'账号已存在!','data'=>array()]);
         }
@@ -104,13 +106,12 @@ class Jigou extends Common
             unset($param['name'],$param['tel']);//去除多余的
             $param['relate_id']=$getId;
 
-            \db('admin_jigou')->insert($param);//添加附表
+            AdminJigouModel::insert($param);//添加附表
 
             $content='新添机构:'.$jigouName.'请审核!';//如果回复内容为空,自定义回复
 
             //rece_id=* 为超级管理员接收 ..发送站内信通知审核情况
-            if(!\db('self_mail')->insert(array('send_id'=>session('admin_id'),'rece_id'=>'*','content'=>$content,'create_at'=>time()))){
-
+            if(!SelfmailModel::insert(array('send_id'=>session('admin_id'),'rece_id'=>'*','content'=>$content,'create_at'=>time()))){
 
                 return json( ['code'=>'006','message'=>'站内信发送失败!','data'=>array()]);
             }
@@ -148,18 +149,20 @@ class Jigou extends Common
 
 
         //是否有机构用户
-        $secret=AdminModel::where(['admin_id'=>$admin_id,'role_id'=>Env::get('jigou.jigou')])->value('flag');
+        $secret=AdminModel::where(['admin_id'=>$admin_id,'role_id'=>Env::get('jigou.jigou')])->find();
         if(!$secret){
             return json(['code'=>'006','message'=>'非法操作!','data'=>array()]);
         }
 
 
 
-          if($secret==1){//暂停机构
+          if($secret['flag']==1){//暂停机构
+              $this->add_log($admin_id,'机构暂停:'.$secret['name'], session('admin_id'));
               $result=AdminModel::where('admin_id',$admin_id)->update(['flag'=>2]);
 
           }
           else{
+              $this->add_log($admin_id,'机构开启:'.$secret['name'], session('admin_id'));
               $result=AdminModel::where('admin_id',$admin_id)->update(['flag'=>1]);//开启机构
           }
 
