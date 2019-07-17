@@ -15,7 +15,6 @@ use app\admin\model\CourseModel;
 use app\admin\model\EveEditModel;
 use app\admin\model\EveModel;
 use app\admin\model\NoticeModel;
-
 use think\Controller;
 use think\Db;
 use think\Request;
