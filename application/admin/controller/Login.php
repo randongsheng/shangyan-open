@@ -14,16 +14,22 @@ class Login
 	/**
 	 * 管理员登录
 	 */
-	public function login()
+	public function login(Request $request)
 	{
 
-     
 
 
-		$post = input('post.');
+
+
+		$tel=$request->post('account',null);
+		$password=$request->post('password',null);
+
+		if(empty($tel)||$password){
+            return json(['code'=>'002','message'=>'缺少参数！','data'=>array()]);
+        }
 
          $where=array();
-        $where['tel']=$post['account'];
+        $where['tel']=$tel;
         $where['examine']=1;//审核必须通过
         $where['flag']=1;
 
@@ -34,7 +40,7 @@ class Login
                return json(['code'=>'006','message'=>'账号待审核通过！','data'=>array()]);
            }
 
-		if(!$acount || $acount['password']!=md5($post['password'].$acount['secret'])||$acount['flag']!=1){
+		if(!$acount || $acount['password']!=md5($password.$acount['secret'])||$acount['flag']!=1){
             return json(['code'=>'006','message'=>'账号或密码不正确！','data'=>array()]);
 		}
 
