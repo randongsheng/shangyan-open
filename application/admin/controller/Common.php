@@ -22,9 +22,9 @@ class common extends Controller
             if($super_shang!=Env::get('rule_super.rule_shang')){
 
 
-           if(empty(authCheck($control . '/' . $action))){
-            sendJson(-1,'没有权限');
-        }
+//           if(empty(authCheck($control . '/' . $action))){
+//            sendJson(-1,'没有权限');
+//        }
             }
 
 

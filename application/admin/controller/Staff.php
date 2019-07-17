@@ -115,7 +115,7 @@ class Staff extends Common
 
 
 
-        if(empty($param['name'])||empty($param['tel'])){
+        if(empty($param['name'])||empty($param['tel'])||empty($param['business_license'])||empty($param['acc_number'])){
             return json(['code'=>'002','message'=>'缺少参数','data'=>array()]);
         }
 
