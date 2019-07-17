@@ -29,7 +29,7 @@ class Eve extends Common
     {
 
         $request=Request::instance();
-//        $page=$request->post('page',1);
+
         $limit=$request->post('limit',10);
         $keyWord=$request->post('keyWord',null);
 
@@ -50,6 +50,10 @@ class Eve extends Common
 
 
         if($data){
+            foreach ($data as $k=>$v){
+                $data[$k]['dayHot']=rand(15,99999);//日活跃
+                $data[$k]['evaluate']=rand(15,99).'%';//好评度
+            }
             return json(['code'=>'000','message'=>'成功','data'=>$data]);
         }
            else{

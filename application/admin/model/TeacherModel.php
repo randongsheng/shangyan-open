@@ -1,32 +1,34 @@
 <?php
 // +----------------------------------------------------------------------
-// | snake
+// | 尚言
 // +----------------------------------------------------------------------
-// | Copyright (c) 2016~2022 http://baiyf.cn All rights reserved.
+// | Copyright (c) 2018~2028 http://www.chineselvyou.com
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
-// | Author: NickBai <1902822973@qq.com>
+// | Author: SC-CG <sc-cg.cn>
 // +----------------------------------------------------------------------
 namespace app\admin\model;
 
 use think\Model;
-use app\admin\model\BaseModel;
-class CourseModel extends BaseModel
+
+/**
+ * 
+ */
+class TeacherModel extends Model
 {
-   // 确定链接表名
-    protected $name = 'course';
+//	protected $pk = 'admin_id';
+	// 设置当前模型对应的完整数据表名称
+    protected $table = 'sy_teacher';
+
 
     public function getCreateAtAttr($value)
     {
 
         return date('Y-m-d H:i:s',$value);
-    }
-
-    public function teacher()//关联老师信息
-    {
-
-        return $this->hasOne('TeacherModel','id','range_id')->field('id,name');
 
     }
+
+
+
 }
