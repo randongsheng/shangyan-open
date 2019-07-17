@@ -29,4 +29,12 @@ class AdminModel extends Model
 
     }
 
+     //关联机构的信息
+    public function jigou()
+    {
+
+        return $this->hasOne('AdminJigouModel','relate_id');
+
+    }
+
 }

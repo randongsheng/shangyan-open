@@ -43,9 +43,9 @@ class Staff extends Common
         $where['examine']=1;
 
         //分组ID
-        if(!empty($_POST['group_id'])){
-            $where['group']=$_POST['group_id'];
-        }
+//        if(!empty($_POST['group_id'])){
+//            $where['group']=$_POST['group_id'];
+//        }
 
         $data= AdminModel::field('password',true)->where($where)->select();
 

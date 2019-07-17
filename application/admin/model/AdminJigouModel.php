@@ -8,16 +8,22 @@
 // +----------------------------------------------------------------------
 // | Author: SC-CG <sc-cg.cn>
 // +----------------------------------------------------------------------
-namespace app\index\model;
+namespace app\admin\model;
 
 use think\Model;
 
 /**
  * 
  */
-class Admin extends Model
+class AdminJigouModel extends Model
 {
-	protected $pk = 'admin_id';
+//	protected $pk = 'admin_id';
 	// 设置当前模型对应的完整数据表名称
-    protected $table = 'sy_admin';
+    protected $table = 'sy_admin_jigou';
+
+
+
+
+
+
 }
