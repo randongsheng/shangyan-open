@@ -17,7 +17,7 @@ class Login
 	public function login()
 	{
 
-        session('rule_shang', Env::get('rule_super.rule_shang'));die;
+     
 
 
 		$post = input('post.');
