@@ -20,9 +20,10 @@ class Login
 
 
 
-
-		$tel=$request->post('account',null);
-		$password=$request->post('password',null);
+        $tel=  input('account');
+        $password=  input('password');
+//		$tel=$request->post('account',null);
+//		$password=$request->get('password',null);
 
 		if(empty($tel)||empty($password)){
             return json(['code'=>'002','message'=>'缺少参数！','data'=>array()]);
