@@ -198,7 +198,7 @@ function put_oss($name, $imgPath, $imgs = []) {
         }
         $filenameEnd = $imgPath[$name].$path.$filename;
     }
-    return ['success'=>true,'code'=>'000','message'=>'上传完成','filename'=>$filenameEnd];
+    return ['code'=>'000','message'=>'上传完成','filename'=>$filenameEnd];
 }
 /**
  * 整理出tree数据 ---  layui tree

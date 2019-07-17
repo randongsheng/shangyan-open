@@ -321,4 +321,26 @@ class Course extends Common
         }
     }
 
+
+
+    public function uploadImgs()
+    {
+        $name = input('post.name');
+
+
+
+        // 图片对应地址
+        $imgPath = [
+            'certificate_photo'=>config('IMG')['teacher_certificate'],
+            'course_img'=>config('IMG')['course_img'],
+
+
+        ];
+        // 执行上传
+        $filename = put_oss($name, $imgPath);
+
+            return json($filename);
+
+
+    }
 }
