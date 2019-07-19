@@ -63,6 +63,58 @@ class Course extends Common
 
     }
 
+    /*
+     * 课程详情
+     */
+
+    public function courseInfo(Request $request)
+    {
+
+
+    $courseId=$request->post('courseId',null);
+
+
+
+        if(empty($courseId)){
+            return json(['code'=>'002','message'=>'缺少参数!','data'=>array()]);
+        }
+
+
+
+        $where=array();
+        $where['id']=$courseId;
+        $where['flag']=1;
+
+
+
+        $courseInfo=CourseModel::where($where)->with('courseList')->with('teacher')->find();
+
+
+
+
+        if($courseInfo){
+
+
+            return json(['code'=>'000','message'=>'成功!','data'=>$courseInfo]);
+        }
+        else{
+            return json(['code'=>'006','message'=>'该课程有误!','data'=>array()]);
+
+    }
+
+
+    }
+
+
+    /*
+     * 删除课时
+     */
+    public function delCt()
+    {
+
+
+
+    }
 
     /**
      * 添加课程

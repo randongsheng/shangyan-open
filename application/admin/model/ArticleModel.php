@@ -17,5 +17,14 @@ use app\admin\model\BaseModel;
  */
 class ArticleModel extends BaseModel
 {
-    protected $name = 'articles';
+    protected $table = 'sy_articles';
+
+    public function getCreateAtAttr($value)
+    {
+
+        return date('Y-m-d H:i:s',$value);
+    }
+    public function getKeywordsAttr($value){//处理数组
+        return explode(',',$value);
+    }
 }

@@ -48,8 +48,8 @@ class Eve extends Common
             $where['ad_id']=session('admin_id');
         }
 
-//        $data= EveModel::where($where)->with('any')->order('create_at','desc')->paginate($limit);
         $data= EveModel::where($where)->order('create_at','desc')->paginate($limit);
+
 
 
         if($data){
@@ -61,6 +61,8 @@ class Eve extends Common
                   }
                   elseif ($v['range']==3){//课程
                       $data[$k]['course']=CourseModel::field('title,id')->where('id',$v['range_id'])->find();
+
+
                   }
                 $data[$k]['dayHot']=rand(15,99999);//日活跃
                 $data[$k]['evaluate']=rand(15,99).'%';//好评度
@@ -73,6 +75,59 @@ class Eve extends Common
 
 
     }
+
+
+    /*
+ * 每日三分钟详情
+ */
+
+    public function eveInfo(Request $request)
+    {
+
+
+        $courseId=$request->post('eveId',null);
+
+
+
+        if(empty($courseId)){
+            return json(['code'=>'002','message'=>'缺少参数!','data'=>array()]);
+        }
+
+
+
+        $where=array();
+        $where['id']=$courseId;
+        $where['flag']=1;
+
+
+
+        $courseInfo=EveModel::where($where)->find();
+
+
+
+        if($courseInfo){
+
+            if($courseInfo['range']==1){//老师
+                $courseInfo['teacher']=TeacherModel::field('name,id')->where('id',$courseInfo['range_id'])->find();
+            }elseif ($courseInfo['range']==2){//机构
+                $courseInfo['admin']=AdminModel::field('name,admin_id')->where('admin_id',$courseInfo['range_id'])->find();
+            }
+            elseif ($courseInfo['range']==3){//课程
+                $courseInfo['course']=CourseModel::field('title,id')->where('id',$courseInfo['range_id'])->find();
+
+
+            }
+
+            return json(['code'=>'000','message'=>'成功!','data'=>$courseInfo]);
+        }
+        else{
+            return json(['code'=>'006','message'=>'该课程有误!','data'=>array()]);
+
+        }
+
+
+    }
+
 
 
     /**

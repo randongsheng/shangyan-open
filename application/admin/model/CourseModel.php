@@ -33,4 +33,11 @@ class CourseModel extends BaseModel
         return $this->hasOne('TeacherModel','id','range_id')->field('id,name');
 
     }
+
+
+    public function courseList()  //关联课时
+    {
+        return $this->hasMany('CourseListModel','course_id','id');
+    }
+
 }

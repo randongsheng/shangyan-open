@@ -22,4 +22,10 @@ class CourseEditModel extends BaseModel
 
         return date('Y-m-d H:i:s',$value);
     }
+
+    public function course()
+    {
+
+        return $this->hasOne('CourseModel','id','course_id')->field('id,title,keywords');
+    }
 }

@@ -22,4 +22,10 @@ class EveEditModel extends BaseModel
 
         return date('Y-m-d H:i:s',$value);
     }
+
+    public function eve()
+    {
+
+        return $this->hasOne('EveModel','id','eve_id')->field('id,title,keywords');
+    }
 }

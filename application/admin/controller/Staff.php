@@ -478,7 +478,7 @@ class Staff extends Common
 
         //课程改动待审核
 
-        $courses_edit=CourseEditModel::where($where)->limit($num)->order('create_at','desc')->select();
+        $courses_edit=CourseEditModel::where($where)->with('course')->limit($num)->order('create_at','desc')->select();
         $courses_editNumber=!empty($courses_edit)?count($courses_edit):0;
 
         //每日三分钟课程
@@ -488,12 +488,12 @@ class Staff extends Common
 
         //每日三分钟改动待审核
 
-        $everyThree_edit=EveEditModel::where($where)->limit($num)->order('create_at','desc')->select();
+        $everyThree_edit=EveEditModel::where($where)->with('eve')->limit($num)->order('create_at','desc')->select();
         $everyThree_editNumber=!empty($everyThree_edit)?count($everyThree_edit):0;
 
         //机构审核
 
-        $jigou=AdminModel::where($where)->limit($num)->order('create_at','desc')->select();
+        $jigou=AdminModel::field('password',true)->where($where)->limit($num)->order('create_at','desc')->select();
         $jigouNumber=!empty($jigou)?count($jigou):0;
 
         //测试题审核
@@ -504,7 +504,7 @@ class Staff extends Common
 
         //优惠券审核
 
-        $coupons=CouponsModel::where($where)->limit($num)->order('create_at','desc')->select();
+        $coupons=CouponsModel::field('id,couponName,create_at')->where($where)->limit($num)->order('create_at','desc')->select();
         $couponsNumber=!empty($coupons)?count($coupons):0;
 
         //公告审核
@@ -522,6 +522,7 @@ class Staff extends Common
         $eveData=array('article'=>$articles,'course'=>$courses,'eve'=>$everyThree,'jigou'=>$jigou,'coupons'=>$coupons,'notice'=>$notice,'course_edit'=>$courses_edit,'everyThree_edit'=>$everyThree_edit);
 
             return json(['code'=>'000','message'=>'成功!','data'=>array('num'=>$eveNumber,'data'=>$eveData)]);
+
 
 
     }

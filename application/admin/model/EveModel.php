@@ -24,21 +24,6 @@ class EveModel extends BaseModel
     }
 
 
-    public function any()
-    {
-
-        if($this->range==1){
-            return $this->hasOne('TeacherModel','id','range_id')->field('id,name');
-        }
-        elseif ($this->range==2){
-            return $this->hasOne('AdminModel','admin_id','range_id')->field('admin_id,name');
-        }
-        else{
-            return $this->hasOne('CourseModel','id','range_id')->field('id,title');
-        }
-
-
-    }
 
 
 
