@@ -21,16 +21,11 @@ class Upload extends Common
 
     public function uploadImgs()
     {
-        $name = input('post.name');
 
-
-
-        $imgPath = config('IMG');
         // 执行上传
+        return json(put_oss(input('post.name'), config('IMG')));
 
-        $filename = put_oss($name, $imgPath);
 
-            return json($filename);
 
 
     }

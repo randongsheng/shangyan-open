@@ -9,6 +9,9 @@ return [
     'save_url'=>'oss.shangyanxinli.com/',
     
 
+
+
+
 	'IMG'=>[
 		// 机构logo
 		'clinic_logo'=>'clinic/logo/',

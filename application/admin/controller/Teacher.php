@@ -110,51 +110,7 @@ class Teacher extends Common
 
 
 
-    /**
-     *
-     *停止发放优惠券
-     */
-    public function delCoupons()
-    {
-
-
-
-        $param=input('post.');
-
-
-
-        if(empty($param['couponId'])){
-            return json(['code'=>'002','message'=>'缺少参数!','data'=>array()]);
-        }
-
-
-
-        $where=array();
-        $where['id']=$param['couponId'];
-        //判断是否为机构的劵
-        if(session('rule_shang')!=Env::get('rule_super.rule_shang')) {
-            $where['ad_id']=session('admin_id');
-        }
-
-          $couponsInfo=CouponsModel::where($where)->find();
-
-        if(!$couponsInfo){
-            return json(['code'=>'006','message'=>'错误的优惠券!','data'=>array()]);
-        }
-
-
-
-        if(CouponsModel::where($where)->update(['flag'=>2])){
-                //添加操作日志
-            $this->add_log($param['couponId'],'停止发放优惠券:'.$couponsInfo['couponName'],session('admin_id'));
-            return json(['code'=>'000','message'=>'成功!','data'=>array()]);
-        }
-        else{
-            return json(['code'=>'006','message'=>'已经停止!','data'=>array()]);
-        }
-
-    }
-
+   
 
 
 

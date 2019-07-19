@@ -138,7 +138,7 @@ function get_age($birthday) {
  * @param array imgs 支持多图片上传的字段
  * @return array ['success','code','message','filename']
  */
-function put_oss($name, $imgPath, $imgs = []) {
+function put_oss($name, $imgPath) {
     $request = Request::instance();
     $path = date('Ymd').'/';
     $imageNames = array_keys($imgPath);
@@ -153,7 +153,7 @@ function put_oss($name, $imgPath, $imgs = []) {
     $token = $auth->uploadToken($bucket);
     $uploadMgr = new UploadManager();
 
-    if(in_array($name, $imgs)){ // 多图片
+    if(is_array($photo)){ // 多图片
 
         $filenames = '';
 
@@ -175,7 +175,7 @@ function put_oss($name, $imgPath, $imgs = []) {
                 return ['success'=>false,'code'=>'008','message'=>$error->getResponse()->error];
             }
 
-            $filenames .= $imgPath[$name].$path.$filename.',';
+            $filenames .= config('save_url').$imgPath[$name].$path.$filename.',';
 
         }
         $filenameEnd = rtrim($filenames,',');
@@ -196,7 +196,7 @@ function put_oss($name, $imgPath, $imgs = []) {
         if($error!=null){// 图片上传失败结果
             return ['success'=>false,'code'=>'008','message'=>$error->getResponse()->error];
         }
-        $filenameEnd = $imgPath[$name].$path.$filename;
+        $filenameEnd = config('save_url').$imgPath[$name].$path.$filename;
     }
     return ['code'=>'000','message'=>'上传完成','filename'=>$filenameEnd];
 }
