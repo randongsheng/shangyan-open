@@ -15,7 +15,7 @@ use app\admin\model\BaseModel;
 class CourseListModel extends BaseModel
 {
    // 确定链接表名
-    protected $name = 'course_list';
+    protected $table = 'sy_course_list';
 
     public function getCreateAtAttr($value)
     {

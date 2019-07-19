@@ -6,10 +6,12 @@
  * Time: 14:16
  */
 namespace app\admin\controller;
+use app\admin\model\AdminModel;
 use app\admin\model\CouponsModel;
 use app\admin\model\CourseListModel;
 use app\admin\model\CourseModel;
 use app\admin\model\EveModel;
+use app\admin\model\TeacherModel;
 use think\Controller;
 use think\Db;
 use think\Request;
@@ -46,11 +48,20 @@ class Eve extends Common
             $where['ad_id']=session('admin_id');
         }
 
+//        $data= EveModel::where($where)->with('any')->order('create_at','desc')->paginate($limit);
         $data= EveModel::where($where)->order('create_at','desc')->paginate($limit);
 
 
         if($data){
             foreach ($data as $k=>$v){
+                  if($v['range']==1){//老师
+                      $data[$k]['teacher']=TeacherModel::field('name,id')->where('id',$v['range_id'])->find();
+                  }elseif ($v['range']==2){//机构
+                      $data[$k]['admin']=AdminModel::field('name,admin_id')->where('admin_id',$v['range_id'])->find();
+                  }
+                  elseif ($v['range']==3){//课程
+                      $data[$k]['course']=CourseModel::field('title,id')->where('id',$v['range_id'])->find();
+                  }
                 $data[$k]['dayHot']=rand(15,99999);//日活跃
                 $data[$k]['evaluate']=rand(15,99).'%';//好评度
             }

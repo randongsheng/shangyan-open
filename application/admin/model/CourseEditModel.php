@@ -15,7 +15,7 @@ use app\admin\model\BaseModel;
 class CourseEditModel extends BaseModel
 {
    // 确定链接表名
-    protected $name = 'course_edit_log';
+    protected $table = 'sy_course_edit_log';
 
     public function getCreateAtAttr($value)
     {

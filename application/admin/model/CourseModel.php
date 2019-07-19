@@ -15,12 +15,16 @@ use app\admin\model\BaseModel;
 class CourseModel extends BaseModel
 {
    // 确定链接表名
-    protected $name = 'course';
+    protected $table = 'sy_course';
 
     public function getCreateAtAttr($value)
     {
 
         return date('Y-m-d H:i:s',$value);
+    }
+
+    public function getKeywordsAttr($value){//处理数组
+        return explode(',',$value);
     }
 
     public function teacher()//关联老师信息

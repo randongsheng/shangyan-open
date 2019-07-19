@@ -15,7 +15,7 @@ use app\admin\model\BaseModel;
 class NoticeModel extends BaseModel
 {
    // 确定链接表名
-    protected $name = 'notice';
+    protected $table = 'sy_notice';
 
     public function getCreateAtAttr($value)
     {

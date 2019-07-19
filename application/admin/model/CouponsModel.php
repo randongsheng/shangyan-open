@@ -15,7 +15,7 @@ use app\admin\model\BaseModel;
 class CouponsModel extends BaseModel
 {
    // 确定链接表名
-    protected $name = 'coupons';
+    protected $table = 'sy_coupons';
 
     public function getCreateAtAttr($value)
     {

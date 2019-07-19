@@ -15,7 +15,7 @@ use app\admin\model\BaseModel;
 class EveEditModel extends BaseModel
 {
    // 确定链接表名
-    protected $name = 'eve_edit_log';
+    protected $table = 'sy_eve_edit_log';
 
     public function getCreateAtAttr($value)
     {

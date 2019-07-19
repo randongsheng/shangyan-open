@@ -15,7 +15,7 @@ use app\admin\model\BaseModel;
 class SelfmailModel extends BaseModel
 {
    // 确定链接表名
-    protected $name = 'self_mail';
+    protected $table = 'sy_self_mail';
 
     public function getCreateAtAttr($value)
     {
