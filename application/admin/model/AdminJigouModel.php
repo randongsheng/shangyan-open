@@ -22,7 +22,9 @@ class AdminJigouModel extends Model
     protected $table = 'sy_admin_jigou';
 
 
-
+    public function getScenePhotoAttr($value){//处理数组
+        return explode(',',$value);
+    }
 
 
 

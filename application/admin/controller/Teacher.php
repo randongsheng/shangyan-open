@@ -6,18 +6,19 @@
  * Time: 14:16
  */
 namespace app\admin\controller;
-use app\admin\model\CouponsModel;
+
+use app\admin\model\TeacherModel;
 use think\Controller;
 use think\Db;
 use think\Request;
 use think\Env;
 
-class Coupons extends Common
+class Teacher extends Common
 {
 
 
-    //所有劵
-        public function couponsList()
+    //所有老师
+        public function teacherList()
     {
 
         $request=Request::instance();
@@ -66,24 +67,21 @@ class Coupons extends Common
 
 
     /**
-     * 添加优惠券
+     * 添加老师
 
      * ];
      */
-    public function addCoupons( ){
+    public function addTeacher(Request $request){
          $param=input('post.');
 
 
-
-        if(empty($param['couponName'])||empty($param['couponMoney'])||empty($param['couponRange'])||empty(session('admin_id'))||empty(session('role_id'))){
+        if(empty($param['phone'])||empty($param['name'])||empty($param['id_card'])||empty(session('admin_id'))||empty(session('role_id'))){
             return json(['code'=>'002','message'=>'缺少参数','data'=>array()]);
         }
 
-        if(session('role_id')==Env::get('jigou.jigou')){//为机构
-        $param['is_jigou']=1;
-        }
-        else{
-            $param['is_jigou']=2;//为平台发放
+        if(session('role_id')!=Env::get('jigou.jigou')){//为机构
+
+            return json(['code'=>'002','message'=>'请机构角色添加哦!','data'=>array()]);
         }
 
         //插入后台发送者ID
@@ -93,21 +91,14 @@ class Coupons extends Common
 
             $param['create_at']=time();
 
-            $request=Request::instance();
 
-            $param['url']= $request->domain().'/index/coupons/register';
 
-           if($getId=CouponsModel::insertGetId($param))
+           if($getId=TeacherModel::insertGetId($param))
            {
 
-                   $content='审核消息!优惠券:'.$param['couponName'].'请审核!';//如果回复内容为空,自定义回复
-
-               //rece_id=* 为超级管理员接收 ..发送站内信通知审核情况
-               if(!\db('self_mail')->insert(array('send_id'=>$param['ad_id'],'rece_id'=>'*','content'=>$content,'create_at'=>time()))){
 
 
-                   return json( ['code'=>'006','message'=>'站内信发送失败!','data'=>array()]);
-               }
+
                //添加操作日志
                $this->add_log($getId,'添加优惠券:'.$param['couponName'],$param['ad_id']);
                return json(['code'=>'000','message'=>'成功','data'=>array()]);

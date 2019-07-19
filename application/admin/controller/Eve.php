@@ -309,7 +309,7 @@ class Eve extends Common
     
     
     /**
-     * 编辑课程并提交审核
+     * 编辑三分钟并提交审核
      */
 
     public function editEve()
@@ -325,7 +325,7 @@ class Eve extends Common
         $courseInfo=EveModel::where('id',$param['eve_id'])->find();
 
         if(!$courseInfo){
-            return json(['code'=>'006','message'=>'没有此课程!','data'=>array()]);
+            return json(['code'=>'006','message'=>'没有此每日三分钟!','data'=>array()]);
         }
 
         //插入后台发送者ID
