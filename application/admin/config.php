@@ -22,15 +22,22 @@ return [
 		'clinic_related'=>'clinic/related/',
 		// 机构保证金支付二维码
 		'clinic_qrcode'=>'clinic/bond_qrcode/',
-		// 老师证书
-		'teacher_certificate'=>'clinic/teacher/certificate/',
-		// 老师学历
-		'teacher_education'=>'clinic/teacher/education/',
-		// 老师培训经历
-		'teacher_train'=>'clinic/teacher/train/',
-		// 老师上身照
-		'teacher_body'=>'clinic/teacher/body/',
-		'course_img'=>'course/course/',
+
+
+
+
+
+
+
+        'teacher_certificate'=>'clinic/teacher/certificate/',     // 老师证书
+        'teacher_education'=>'clinic/teacher/education/',   // 老师学历
+        'teacher_train'=>'clinic/teacher/train/',  // 老师培训经历
+		'teacher_body'=>'clinic/teacher/body/',	// 老师上身照
+
+
+		'course_img'=>'course/course/',//课程缩略图
+		'id_card'=>'id_card/id_card/',//身份证图
+
 	],
 
 

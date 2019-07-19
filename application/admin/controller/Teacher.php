@@ -97,8 +97,6 @@ class Teacher extends Common
            {
 
 
-
-
                //添加操作日志
                $this->add_log($getId,'添加优惠券:'.$param['couponName'],$param['ad_id']);
                return json(['code'=>'000','message'=>'成功','data'=>array()]);
