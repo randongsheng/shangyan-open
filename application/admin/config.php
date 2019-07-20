@@ -10,6 +10,11 @@ return [
     
 
 
+     'redis_type'=>[
+         'login'=>'login',
+         'teacher_add'=>'teacher_add',
+
+     ],
 
 
 	'IMG'=>[
