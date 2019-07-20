@@ -49,7 +49,7 @@ class Login
         //查询所有权限节点
         $kp = db('role')->where(['id'=>$acount['role_id']])->value('rule');
 
-
+        AdminModel::where($where)->update(array('login_time'=>time(),'ip'=>$request->ip()));//记录登陆状态
         if(empty($kp)){
             return json(['code'=>'006','message'=>'账号异常！','data'=>array()]);
         }else if('*' == $kp){
@@ -78,7 +78,7 @@ class Login
                 }
             }
 
-             AdminModel::where($where)->update(array('login_time'=>time(),'ip'=>$request->ip()));
+//             AdminModel::where($where)->update(array('login_time'=>time(),'ip'=>$request->ip()));
 
             return json(['code'=>'000','message'=>'成功!','data'=>array('name'=>$acount['name'],'role'=>$res)]);
 //                      return json(['code'=>'000','message'=>'欢迎超级管理员！','data'=>array('admin_id'=>$acount['admin_id'],'admin_tel'=>$acount['tel'],'role'=>$res)]);
