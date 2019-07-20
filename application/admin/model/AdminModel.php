@@ -29,6 +29,13 @@ class AdminModel extends Model
 
     }
 
+    public function getLoginTimeAttr($value)
+    {
+
+        return date('Y-m-d H:i:s',$value);
+
+    }
+
      //关联机构的信息
     public function jigou()
     {
