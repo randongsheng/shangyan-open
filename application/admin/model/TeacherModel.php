@@ -29,6 +29,12 @@ class TeacherModel extends Model
 
     }
 
+    public function getLoginTimeAttr($value)
+    {
+
+        return date('Y-m-d H:i:s',$value);
+
+    }
 
 
 }

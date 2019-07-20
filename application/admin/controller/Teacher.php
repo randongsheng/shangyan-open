@@ -25,40 +25,39 @@ class Teacher extends Common
     {
 
         $request=Request::instance();
-//        $page=$request->post('page',1);
+
         $limit=$request->post('limit',10);
-        $couponType=$request->post('couponType',null);
-        $validEndTime=$request->post('validEndTime',null);
+        $name=$request->post('name',null);
+
 
            //查询条件
         $where=array();
         $where['flag']=1;
-        $where['examine']=1;
 
-        if(!empty($couponType)){
-            $where['couponType']=$couponType;
+
+        if(!empty($name)){
+            $where['name']=$name;
         }
 
-        //判断是否为机构的劵
+        //判断所属机构
         if(session('rule_shang')!=Env::get('rule_super.rule_shang')) {
             $where['ad_id']=session('admin_id');
         }
 
-        //已过期
-
-        if(!empty($validEndTime)){
-
-            $where['validEndTime']=array('lt',$validEndTime);
-        }
 
 
-
-
-        $data= CouponsModel::where($where)->order('create_at','desc')->paginate($limit);
+        $data= TeacherModel::where($where)->field('id,name,login_time')->order('create_at','desc')->paginate($limit);
 
 
 
         if($data){
+
+            foreach ($data as $k=>$v){
+                $data[$k]['order_course']=rand(15,99999);//本周订单课程
+                $data[$k]['order_qing']=rand(15,99999);//本周订单轻咨询
+                $data[$k]['order_zi']=rand(15,99999);//本周订单咨询
+                $data[$k]['evaluate']=rand(15,99).'%';//好评度
+            }
             return json(['code'=>'000','message'=>'成功','data'=>$data]);
         }
            else{
@@ -78,7 +77,7 @@ class Teacher extends Common
          $param=input('post.');
 
 
-        if(empty($param['phone'])||empty($param['name'])||empty($param['id_card'])||empty(session('admin_id'))||empty(session('role_id'))){
+        if(empty($param['phone'])||empty($param['name'])||empty($param['id_card'])||empty($param['code'])||empty(session('admin_id'))||empty(session('role_id'))){
             return json(['code'=>'002','message'=>'缺少参数','data'=>array()]);
         }
 
@@ -90,11 +89,23 @@ class Teacher extends Common
         //插入后台发送者ID
         $param['ad_id']=session('admin_id');
 
+         $redis=new Redis();
+         $mop=$redis->get(config('redis_type.teacher_add').$param['phone']);
+         //判断验证码
+        if(empty($mop)){
+            return json(['code'=>'006','message'=>'验证码超时!','data'=>array()]);
+        }
+        if($mop!=$param['code']){
+            return json(['code'=>'006','message'=>'验证码错误!','data'=>array()]);
+        }
+
+
+
         try{
 
             $param['create_at']=time();
 
-
+            unset($param['code'],$param['']);
 
            if($getId=TeacherModel::insertGetId($param))
            {
@@ -113,7 +124,8 @@ class Teacher extends Common
 
 
 
-   
+
+
 
 
 

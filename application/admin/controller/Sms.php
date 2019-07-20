@@ -56,7 +56,7 @@ class Sms extends Common
 //            $rsp = json_decode($result);
            $redis->set(config('redis_type.teacher_add').$mobile,$code);
 
-            $redis->expire(config('redis_type.teacher_add').$mobile,10);
+            $redis->expire(config('redis_type.teacher_add').$mobile,900);
 
             return json(['code'=>'000','message'=>'成功','data'=>array()]);
         } catch(\Exception $e) {

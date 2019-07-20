@@ -6,7 +6,7 @@ return [
     'SYURL'=>'api.sc-cg.cn',
     // 存储地址
     'save_protocol'=>'http://',
-    'save_url'=>'oss.shangyanxinli.com/',
+    'save_url'=>'http://oss.shangyanxinli.com/',
     
 
 
