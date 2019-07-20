@@ -122,7 +122,7 @@ class Teacher extends Common
                }
                if($pei){//添加培训证书
                    foreach ($pei as $ki=>$vi){
-                       TeacherCertificateModel::insert(array('teacher_id'=>$getId,'type'=>3,'img'=>$vi['img'],'create_at'=>time()));
+                       TeacherCertificateModel::insert(array('teacher_id'=>$getId,'type'=>3,'img'=>$vi,'create_at'=>time()));
                    }
                }
 
