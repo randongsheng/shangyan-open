@@ -30,7 +30,15 @@ class Auth extends Common
 
        $data= db('node')->select();
 
-        return json(['code'=>'000','message'=>'成功','data'=>$data]);
+        $result=array();
+       foreach ($data as $k=>$v){
+           if($v['typeid']==0){
+              $v['tree']=\db('node')->where('typeid',$v['typeid'])->select();
+               $result[]=$v;
+           }
+       }
+
+        return json(['code'=>'000','message'=>'成功','data'=>$result]);
     }
 
 

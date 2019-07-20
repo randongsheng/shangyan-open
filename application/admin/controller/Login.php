@@ -78,6 +78,7 @@ class Login
                 }
             }
 
+             AdminModel::where($where)->update(array('login_time'=>time(),'ip'=>$request->ip()));
 
             return json(['code'=>'000','message'=>'成功!','data'=>array('name'=>$acount['name'],'role'=>$res)]);
 //                      return json(['code'=>'000','message'=>'欢迎超级管理员！','data'=>array('admin_id'=>$acount['admin_id'],'admin_tel'=>$acount['tel'],'role'=>$res)]);

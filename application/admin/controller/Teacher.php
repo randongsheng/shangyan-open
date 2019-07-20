@@ -20,7 +20,8 @@ class Teacher extends Common
     public function test()
     {
 
-        echo phpinfo();
+       $redis=new \Redis();
+       $redis->set('15733118589',54122);
     }
     //所有老师
         public function teacherList()
