@@ -17,6 +17,11 @@ class Teacher extends Common
 {
 
 
+    public function test()
+    {
+
+        echo phpinfo();
+    }
     //所有老师
         public function teacherList()
     {
