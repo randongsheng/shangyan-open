@@ -147,6 +147,7 @@ function put_oss($name, $imgPath) {
     }
 
     $photo = $request->file($name);
+    dump($photo);die;
 
     $auth = new QiniuAuth(Env::get('qiniu.accesskey'),Env::get('qiniu.secretkey'));
     $bucket = Env::get('qiniu.clinicbucket');
