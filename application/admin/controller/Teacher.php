@@ -8,10 +8,12 @@
 namespace app\admin\controller;
 
 use app\admin\model\TeacherModel;
+use think\cache\driver\Redis;
 use think\Controller;
 use think\Db;
 use think\Request;
 use think\Env;
+
 
 class Teacher extends Common
 {
@@ -20,7 +22,7 @@ class Teacher extends Common
     public function test()
     {
 
-       $redis=new \Redis();
+       $redis= new Redis();
        $redis->set('15733118589',54122);
     }
     //所有老师
