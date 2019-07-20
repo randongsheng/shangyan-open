@@ -18,6 +18,8 @@ class Auth extends Common
     }
 
 
+
+
     //所有节点列表
     public function nodeList()
     {

@@ -47,7 +47,7 @@ class Staff extends Common
 //            $where['group']=$_POST['group_id'];
 //        }
 
-        $data= AdminModel::field('password',true)->where($where)->select();
+        $data= AdminModel::field('password',true)->with('role')->where($where)->select();
 
 
         return json(['code'=>'000','message'=>'成功','data'=>$data]);
@@ -77,13 +77,18 @@ class Staff extends Common
 //           }
 
 
-        if(\db('admin')->where($where)->find()){
+        if(AdminModel::where($where)->find()){
 
             return json(['code'=>'006','message'=>'账号已存在!','data'=>array()]);
         }
 
 
         try{
+
+            if($param['role_id']==Env::get('rule_super.role_id')){
+                return json(['code'=>'006','message'=>'禁止!','data'=>array()]);
+            }
+
             $param["secret"] = rand(1000,9999);
             $param['password']=md5('123456'.$param["secret"]);
             $param['examine']=1;//超级管理员添加的用户直接审核通过
@@ -125,7 +130,7 @@ class Staff extends Common
         $where['tel']=$param['tel'];
 
 
-        if(\db('admin')->where($where)->find()){
+        if(AdminModel::where($where)->find()){
 
             return json(['code'=>'006','message'=>'账号已存在!','data'=>array()]);
         }
@@ -199,12 +204,15 @@ class Staff extends Common
         }
 
         //是否有用户
-         $secret= \db('admin')->field('admin_id,name')->where('admin_id',$param['admin_id'])->find();
+         $secret= AdminModel::field('admin_id,name')->where('admin_id',$param['admin_id'])->find();
 
            if(!$secret){
                return json(['code'=>'006','message'=>'非法操作!','data'=>array()]);
            }
 
+        if(isset($param['role_id'])&&$param['role_id']==Env::get('rule_super.role_id')){
+            return json(['code'=>'006','message'=>'禁止!','data'=>array()]);
+        }
            $admin_id=$param['admin_id'];
 
            unset($param['admin_id']);
@@ -212,7 +220,7 @@ class Staff extends Common
 
 
 
-        if(\db('admin')->where('admin_id',$admin_id)->update($param)){
+        if(AdminModel::where('admin_id',$admin_id)->update($param)){
             $this->add_log($admin_id,'修改后台用户:'.$secret['name'], session('admin_id'));
             return json(['code'=>'000','message'=>'成功!','data'=>array()]);
         }

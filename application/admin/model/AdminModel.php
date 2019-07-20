@@ -37,4 +37,13 @@ class AdminModel extends Model
 
     }
 
+
+    //关联机构的信息
+    public function role()
+    {
+
+        return $this->hasOne('RoleModel','id','role_id');
+
+    }
+
 }
