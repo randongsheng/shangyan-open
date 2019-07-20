@@ -7,6 +7,7 @@
  */
 namespace app\admin\controller;
 
+use app\admin\model\TeacherCertificateModel;
 use app\admin\model\TeacherModel;
 use think\cache\driver\Redis;
 use think\Controller;
@@ -36,7 +37,7 @@ class Teacher extends Common
 
 
         if(!empty($name)){
-            $where['name']=$name;
+            $where['name']=array('like','%'.$name.'%');
         }
 
         //判断所属机构
@@ -99,24 +100,41 @@ class Teacher extends Common
             return json(['code'=>'006','message'=>'验证码错误!','data'=>array()]);
         }
 
-
+               Db::startTrans();
 
         try{
 
-            $param['create_at']=time();
+            $zhuan=$param['zhuan'];//专业证书
+            $pei=$param['pei'];//培训证书
 
-            unset($param['code'],$param['']);
+            $param['create_at']=time();
+            //关联信息
+
+            unset($param['code'],$param['zhuan'],$param['pei']);
 
            if($getId=TeacherModel::insertGetId($param))
            {
 
+               if($zhuan){//添加证书
+                   foreach ($zhuan as $k=>$v){
+                 TeacherCertificateModel::insert(array('teacher_id'=>$getId,'cata_name'=>$v['cata_name'],'cata_number'=>$v['cata_number'],'type'=>1,'img'=>$v['img'],'create_at'=>time()));
+                   }
+               }
+               if($pei){//添加培训证书
+                   foreach ($pei as $ki=>$vi){
+                       TeacherCertificateModel::insert(array('teacher_id'=>$getId,'type'=>3,'img'=>$vi['img'],'create_at'=>time()));
+                   }
+               }
 
                //添加操作日志
-               $this->add_log($getId,'添加优惠券:'.$param['couponName'],$param['ad_id']);
+               $this->add_log($getId,'添加老师:'.$param['name'],$param['ad_id']);
+
+               Db::commit();
                return json(['code'=>'000','message'=>'成功','data'=>array()]);
            }
 
         }catch(\PDOException $e){
+            Db::rollback();
             return json(['code'=>'006','message'=>'失败','data'=>array()]);
 
         }
