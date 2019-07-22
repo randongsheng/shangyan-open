@@ -4,4 +4,3 @@ composer.lock
 thinkphp
 .env
 .user.ini
-.database
