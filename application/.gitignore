@@ -1,2 +1,2 @@
-auth.txt
-database.php
+/database.php
+!.gitignore
